@@ -6,11 +6,17 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.thomaslam.chatgptclient.chatecompletion.presentation.ChatScreen
+import com.thomaslam.chatgptclient.chatecompletion.presentation.Conversationscreen
+import com.thomaslam.chatgptclient.chatecompletion.presentation.util.Screen
 import com.thomaslam.chatgptclient.ui.theme.ChatGPTClientTheme
 
 class MainActivity : ComponentActivity() {
@@ -23,25 +29,37 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    Greeting("Android")
+                    val navController = rememberNavController()
+                    NavHost(navController = navController, startDestination = Screen.ChatScreen.route) {
+                        composable(route = Screen.ChatScreen.route) {
+                            ChatScreen(navController = navController)
+                        }
+                        composable(
+                            route = Screen.ConversationScreen.route + "?conversationId={conversationId}",
+                            arguments = listOf(
+                                navArgument(
+                                    name = "conversationId"
+                                ) {
+                                    type = NavType.IntType
+                                    defaultValue = -1
+                                }
+                            )
+                        ) {
+                            Conversationscreen(navController = navController)
+                        }
+                    }
                 }
             }
         }
     }
 }
 
-@Composable
-fun Greeting(name: String) {
-    Text(
-        modifier = Modifier.testTag("Message"),
-        text = "Hello $name!",
-    )
-}
+
 
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
     ChatGPTClientTheme {
-        Greeting("Android")
+
     }
 }
