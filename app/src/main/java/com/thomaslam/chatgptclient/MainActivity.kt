@@ -18,7 +18,9 @@ import com.thomaslam.chatgptclient.chatecompletion.presentation.ChatScreen
 import com.thomaslam.chatgptclient.chatecompletion.presentation.Conversationscreen
 import com.thomaslam.chatgptclient.chatecompletion.presentation.util.Screen
 import com.thomaslam.chatgptclient.ui.theme.ChatGPTClientTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,6 +51,7 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 }
+
             }
         }
     }
