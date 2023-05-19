@@ -26,7 +26,8 @@ import com.thomaslam.chatgptclient.ui.theme.userBackground
 
 @Composable
 fun MessageSendBar(
-    modifier: Modifier
+    modifier: Modifier,
+    onMessageButtonClick: () -> Unit
 ) {
     var value by remember { mutableStateOf("") }
     Row(
@@ -41,7 +42,7 @@ fun MessageSendBar(
         )
         IconButton(
             modifier = Modifier.background(MaterialTheme.colors.userBackground),
-            onClick = { /*TODO*/ }
+            onClick = onMessageButtonClick
         ) {
             Icon(
                 painterResource(id = R.drawable.send),
@@ -58,7 +59,10 @@ private fun DefaultPreview() {
     ChatGPTClientTheme {
         MessageSendBar(
             Modifier
-                .background(MaterialTheme.colors.userBackground)
+                .background(MaterialTheme.colors.userBackground),
+            {
+
+            }
         )
     }
 }

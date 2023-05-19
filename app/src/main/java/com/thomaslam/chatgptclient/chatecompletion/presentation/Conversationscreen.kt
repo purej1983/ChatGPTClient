@@ -11,6 +11,8 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.thomaslam.chatgptclient.chatecompletion.presentation.components.AssitantMessageItem
 import com.thomaslam.chatgptclient.chatecompletion.presentation.components.MessageSendBar
 import com.thomaslam.chatgptclient.chatecompletion.presentation.components.UserMessageItem
@@ -19,7 +21,9 @@ import com.thomaslam.chatgptclient.ui.theme.assistantBackground
 import com.thomaslam.chatgptclient.ui.theme.userBackground
 
 @Composable
-fun Conversationscreen() {
+fun Conversationscreen(
+    navController: NavController
+) {
     val list: List<String> = listOf("I am a boy", "You are a girl", "She is hahaha")
     var i = 0
     Column(
@@ -49,7 +53,10 @@ fun Conversationscreen() {
         MessageSendBar(
             modifier = Modifier
                 .weight(1f, false)
-                .background(MaterialTheme.colors.userBackground)
+                .background(MaterialTheme.colors.userBackground),
+            onMessageButtonClick = {
+                navController.navigateUp()
+            }
         )
 
     }
@@ -59,6 +66,6 @@ fun Conversationscreen() {
 @Composable
 private fun DefaultPreview() {
     ChatGPTClientTheme {
-        Conversationscreen()
+        Conversationscreen(rememberNavController())
     }
 }
