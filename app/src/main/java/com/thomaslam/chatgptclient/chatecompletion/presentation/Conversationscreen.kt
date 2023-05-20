@@ -9,22 +9,31 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltNavGraphViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.thomaslam.chatgptclient.chatecompletion.presentation.components.AssitantMessageItem
 import com.thomaslam.chatgptclient.chatecompletion.presentation.components.MessageSendBar
 import com.thomaslam.chatgptclient.chatecompletion.presentation.components.UserMessageItem
+import com.thomaslam.chatgptclient.chatecompletion.presentation.util.Screen
 import com.thomaslam.chatgptclient.ui.theme.ChatGPTClientTheme
 import com.thomaslam.chatgptclient.ui.theme.assistantBackground
 import com.thomaslam.chatgptclient.ui.theme.userBackground
 
 @Composable
 fun Conversationscreen(
-    navController: NavController
+    navController: NavController,
+    viewModel: ConversationViewModel = hiltViewModel()
 ) {
-    val list: List<String> = listOf("I am a boy", "You are a girl", "She is hahaha")
+    val state by remember {
+        viewModel.state
+    }
+
     var i = 0
     Column(
         modifier  = Modifier
@@ -33,17 +42,19 @@ fun Conversationscreen(
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         LazyColumn(modifier =
-            Modifier.fillMaxWidth()
+        Modifier
+            .fillMaxWidth()
+            .weight(1f)
         ) {
-            items(list) { item ->
-                if (i % 2 == 0) {
+            items(state.messages) { item ->
+                if (item.role == "user") {
                     UserMessageItem(
-                        content = item,
+                        content = item.content,
                         backgroundColor = MaterialTheme.colors.userBackground
                     )
                 } else {
                     AssitantMessageItem(
-                        content = item,
+                        content = item.content,
                         backgroundColor = MaterialTheme.colors.assistantBackground
                     )
                 }
@@ -52,13 +63,11 @@ fun Conversationscreen(
         }
         MessageSendBar(
             modifier = Modifier
-                .weight(1f, false)
                 .background(MaterialTheme.colors.userBackground),
             onMessageButtonClick = {
-                navController.navigateUp()
+                viewModel.send(it)
             }
         )
-
     }
 }
 

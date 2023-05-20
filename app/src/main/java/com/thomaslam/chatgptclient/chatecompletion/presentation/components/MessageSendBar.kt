@@ -17,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.thomaslam.chatgptclient.R
@@ -27,9 +28,11 @@ import com.thomaslam.chatgptclient.ui.theme.userBackground
 @Composable
 fun MessageSendBar(
     modifier: Modifier,
-    onMessageButtonClick: () -> Unit
+    onMessageButtonClick: (String) -> Unit
 ) {
     var value by remember { mutableStateOf("") }
+    val focusManager = LocalFocusManager.current
+
     Row(
         modifier = modifier
     ){
@@ -42,7 +45,11 @@ fun MessageSendBar(
         )
         IconButton(
             modifier = Modifier.background(MaterialTheme.colors.userBackground),
-            onClick = onMessageButtonClick
+            onClick = {
+                onMessageButtonClick(value)
+                focusManager.clearFocus()
+                value = ""
+            }
         ) {
             Icon(
                 painterResource(id = R.drawable.send),
