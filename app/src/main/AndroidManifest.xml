@@ -16,7 +16,9 @@
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.ChatGPTClient">
+            android:theme="@style/Theme.ChatGPTClient"
+            android:windowSoftInputMode="stateVisible|adjustResize"
+            >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

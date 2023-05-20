@@ -1,4 +1,4 @@
-package com.thomaslam.chatgptclient.chatecompletion.domain.Entity
+package com.thomaslam.chatgptclient.chatecompletion.domain.entity
 
 import com.google.gson.annotations.SerializedName
 
