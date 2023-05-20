@@ -1,6 +1,6 @@
 package com.thomaslam.chatgptclient.chatecompletion.data.remote.dto
 
-import com.thomaslam.chatgptclient.chatecompletion.domain.Entity.Model
+import com.thomaslam.chatgptclient.chatecompletion.domain.entity.Model
 
 data class ChatCompletionResponse(
     val id: String,
