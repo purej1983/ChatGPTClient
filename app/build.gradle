@@ -6,6 +6,11 @@ plugins {
     id 'com.google.dagger.hilt.android'
 }
 
+// reading api secret
+def apikeyPropertiesFile = rootProject.file("apikey.properties")
+def apikeyProperties = new Properties()
+apikeyProperties.load(new FileInputStream(apikeyPropertiesFile))
+
 android {
     compileSdk 33
 
@@ -20,6 +25,8 @@ android {
         vectorDrawables {
             useSupportLibrary true
         }
+
+        buildConfigField("String", "CHAT_GPT_API_KEY", apikeyProperties['CHAT_GPT_API_KEY'])
     }
 
     buildTypes {
@@ -68,4 +75,11 @@ dependencies {
     //hilt
     implementation "com.google.dagger:hilt-android:2.44"
     kapt "com.google.dagger:hilt-compiler:2.44"
+    implementation "androidx.hilt:hilt-navigation-compose:1.0.0-alpha03"
+
+    //Retrofit
+    implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
+    implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"
+    implementation "com.squareup.okhttp3:logging-interceptor:$httplogging_version"
+    implementation "com.google.code.gson:gson:$json_version"
 }
