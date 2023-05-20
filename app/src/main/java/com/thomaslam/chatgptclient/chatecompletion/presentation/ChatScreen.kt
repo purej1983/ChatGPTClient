@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.thomaslam.chatgptclient.chatecompletion.presentation.util.Screen
@@ -29,7 +30,8 @@ import com.thomaslam.chatgptclient.ui.theme.userBackground
 
 @Composable
 fun ChatScreen(
-    navController: NavController
+    navController: NavController,
+    viewModel: ChatViewModel = hiltViewModel()
 ) {
     val list: List<String> = listOf("I am a boy", "You are a girl", "She is hahaha")
     val scaffoldState = rememberScaffoldState()
