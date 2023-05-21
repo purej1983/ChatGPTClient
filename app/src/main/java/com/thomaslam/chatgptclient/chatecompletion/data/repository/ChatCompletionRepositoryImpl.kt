@@ -23,6 +23,10 @@ class ChatCompletionRepositoryImpl (
         return chatGptDao.insertChat(ChatEntity())
     }
 
+    override suspend fun updateLastUserMessage(chatId: Long, content: String) {
+        chatGptDao.updateLastUserMessage(chatId, content)
+    }
+
     override suspend fun saveLocalMessage(chatId :Long, message: Message) {
         chatGptDao.insertConversation(
             ConversationEntity(
@@ -51,9 +55,4 @@ class ChatCompletionRepositoryImpl (
             it.toMessage()
         }
     }
-
-    override suspend fun updateLastUserMessage(chatId: Long, content: String) {
-        chatGptDao.updateLastUserMessage(chatId, content)
-    }
-
 }

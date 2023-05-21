@@ -1,4 +1,4 @@
-package com.thomaslam.chatgptclient
+package com.thomaslam.chatgptclient.chatecompletion
 
 import org.junit.Test
 
