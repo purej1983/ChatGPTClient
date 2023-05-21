@@ -2,6 +2,7 @@ package com.thomaslam.chatgptclient.chatecompletion.presentation
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.thomaslam.chatgptclient.chatecompletion.domain.ChatCompletionUseCase
@@ -14,14 +15,29 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ConversationViewModel @Inject constructor(
-    private val chatCompletionUseCase: ChatCompletionUseCase
+    private val chatCompletionUseCase: ChatCompletionUseCase,
+    savedStateHandle: SavedStateHandle
 ) : ViewModel(){
     private val scope = CoroutineScope(Dispatchers.Default)
-    private val _state = mutableStateOf(ConversationState())
-    val state: State<ConversationState> = _state
+    private val _state = mutableStateOf(ConversationScreenUIState())
+    val state: State<ConversationScreenUIState> = _state
+    private var currentChatId: Long = -1
 
     init {
+        savedStateHandle.get<Long>("chatId")?.let { chatId ->
+            currentChatId = chatId
+            getConversation(chatId)
+        }
+    }
 
+    private fun getConversation(chatId: Long) {
+        viewModelScope.launch {
+            chatCompletionUseCase.getConversation(chatId)?.also { messages ->
+                _state.value = state.value.copy(
+                    messages = messages
+                )
+            }
+        }
     }
 
     fun send(content: String) {
@@ -30,8 +46,8 @@ class ConversationViewModel @Inject constructor(
         val messages = _state.value.messages + newUserMessage
         appendMessage(newUserMessage)
         scope.launch {
-            val newAssitantMessage = chatCompletionUseCase.createCompletion(messages)
-            appendMessage(newAssitantMessage)
+            chatCompletionUseCase.createCompletion(currentChatId, messages)
+            getConversation(currentChatId)
         }
     }
 
@@ -40,6 +56,9 @@ class ConversationViewModel @Inject constructor(
         _state.value = state.value.copy(
             messages = newMessages
         )
+        scope.launch {
+            chatCompletionUseCase.updateLastUserMessage(currentChatId, message.content)
+            chatCompletionUseCase.saveMessage(currentChatId, message)
+        }
     }
-
 }
