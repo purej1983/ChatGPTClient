@@ -1,5 +1,9 @@
 package com.thomaslam.chatgptclient.di
 
+import android.app.Application
+import androidx.room.Room
+import com.thomaslam.chatgptclient.chatecompletion.data.datasource.ChatGPTDatabase
+import com.thomaslam.chatgptclient.chatecompletion.data.datasource.ChatGptDao
 import com.thomaslam.chatgptclient.chatecompletion.data.remote.ChatCompletionService
 import com.thomaslam.chatgptclient.chatecompletion.data.remote.interceptor.AuthorizationInterceptor
 import com.thomaslam.chatgptclient.chatecompletion.data.repository.ChatCompletionRepositoryImpl
@@ -54,13 +58,23 @@ class AppModule {
 
     @Singleton
     @Provides
-    fun provideChatCompletionRepository(chatCompletionService: ChatCompletionService): ChatCompletionRepository {
-        return ChatCompletionRepositoryImpl(chatCompletionService)
+    fun provideChatCompletionRepository(db: ChatGPTDatabase, chatCompletionService: ChatCompletionService): ChatCompletionRepository {
+        return ChatCompletionRepositoryImpl(db.dao, chatCompletionService)
     }
 
     @Singleton
     @Provides
     fun provideChatCompletionUseCase(chatCompletionRepository: ChatCompletionRepository): ChatCompletionUseCase {
         return ChatCompletionUseCase(chatCompletionRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideChatGPTDatabase(app: Application): ChatGPTDatabase {
+        return Room.databaseBuilder(
+            app,
+            ChatGPTDatabase::class.java,
+            ChatGPTDatabase.DATABASE_NAME
+        ).build()
     }
 }
