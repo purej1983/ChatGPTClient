@@ -1,6 +1,5 @@
 package com.thomaslam.chatgptclient.chatecompletion
 
-import androidx.lifecycle.viewmodel.compose.viewModel
 import app.cash.turbine.test
 import com.thomaslam.chatgptclient.chatecompletion.domain.ChatCompletionUseCase
 import com.thomaslam.chatgptclient.chatecompletion.presentation.ChatViewModel
@@ -8,26 +7,21 @@ import io.mockk.MockKAnnotations
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.newSingleThreadContext
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import com.google.common.truth.Truth.assertThat
 import com.thomaslam.chatgptclient.chatecompletion.util.MockDataCollections
 import io.mockk.coEvery
-import io.mockk.every
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestCoroutineScheduler
-import kotlinx.coroutines.test.advanceUntilIdle
-
 
 class ChatScreenViewModelTest {
     private lateinit var scheduler: TestCoroutineScheduler
-    lateinit var usecase: ChatCompletionUseCase
+    private lateinit var usecase: ChatCompletionUseCase
 
     private lateinit var viewModel: ChatViewModel
     @Before
