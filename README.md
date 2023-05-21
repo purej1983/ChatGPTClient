@@ -14,6 +14,6 @@ The Project is try to demo an android app connect the Chat GPT api
 4. Build and run the project
 
 ## Debug Tools
-Postman collections
-Room DB data validate
+1. Postman collections ([howto?](PostManHowTo.md))
+2. Room DB data validate ([howto?](DatabaseInspection.md))
 
