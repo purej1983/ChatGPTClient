@@ -7,9 +7,7 @@ import com.thomaslam.chatgptclient.chatecompletion.util.MockDataCollections
 
 class FakeChatCompletionRepository: ChatCompletionRepository {
     override suspend fun getChats(): List<Chat> {
-        return listOf(
-            Chat(lastUserMessage = "New Chat", id = 1)
-        )
+        return MockDataCollections.chats
     }
 
     override suspend fun newChat(): Long {

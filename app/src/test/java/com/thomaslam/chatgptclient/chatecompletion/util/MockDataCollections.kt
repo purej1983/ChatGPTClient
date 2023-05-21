@@ -3,6 +3,7 @@ package com.thomaslam.chatgptclient.chatecompletion.util
 import com.thomaslam.chatgptclient.chatecompletion.data.remote.dto.ChatCompletionResponse
 import com.thomaslam.chatgptclient.chatecompletion.data.remote.dto.Choice
 import com.thomaslam.chatgptclient.chatecompletion.data.remote.dto.Usage
+import com.thomaslam.chatgptclient.chatecompletion.domain.entity.Chat
 import com.thomaslam.chatgptclient.chatecompletion.domain.entity.Message
 import com.thomaslam.chatgptclient.chatecompletion.domain.entity.Model
 
@@ -41,6 +42,11 @@ class MockDataCollections {
                     index = 0
                 )
             )
+        )
+
+        val chats = listOf(
+            Chat(lastUserMessage = "Top 5 attractions in Birmingham", id = 1),
+            Chat(lastUserMessage = "New Chat", id = 2),
         )
     }
 }
