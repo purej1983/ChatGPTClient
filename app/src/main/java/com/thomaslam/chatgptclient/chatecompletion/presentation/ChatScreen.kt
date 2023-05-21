@@ -17,29 +17,58 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.thomaslam.chatgptclient.chatecompletion.presentation.util.Screen
 import com.thomaslam.chatgptclient.ui.theme.ChatGPTClientTheme
 import com.thomaslam.chatgptclient.ui.theme.userBackground
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun ChatScreen(
     navController: NavController,
     viewModel: ChatViewModel = hiltViewModel()
 ) {
-    val list: List<String> = listOf("I am a boy", "You are a girl", "She is hahaha")
+    val state by remember {
+        viewModel.state
+    }
     val scaffoldState = rememberScaffoldState()
+
+    LaunchedEffect(key1 = true) {
+        viewModel.eventFlow.collectLatest { event ->
+            when(event) {
+                is ChatViewModel.UiEvent.NavigateToChat -> {
+                    navController.navigate(
+                        Screen.ConversationScreen.route + "?chatId=${event.id}"
+                    )
+                }
+            }
+        }
+    }
+    ComposableLifecycle { source, event ->
+        if (event == Lifecycle.Event.ON_RESUME) {
+            viewModel.getChats()
+        }
+    }
+
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-
+                    viewModel.newChat()
                 },
                 backgroundColor = MaterialTheme.colors.primary
             ) {
@@ -57,21 +86,37 @@ fun ChatScreen(
             LazyColumn(modifier =
             Modifier.fillMaxWidth()
             ) {
-                items(list) { item ->
+                items(state.chats) { item ->
                         Text(
-                            text = item,
+                            text = item.lastUserMessage,
                             modifier = Modifier
                             .padding(8.dp)
                             .clickable {
-                                navController.navigate(
-                                    Screen.ConversationScreen.route
-                                )
+                                item.id?.let {
+                                    viewModel.goToChat(it)
+                                }
                             },
                             color = Color.White
                         )
 
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun ComposableLifecycle(
+    lifeCycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
+    onEvent: (LifecycleOwner, Lifecycle.Event) -> Unit
+) {
+    DisposableEffect(lifeCycleOwner) {
+        val observer = LifecycleEventObserver { source, event ->
+            onEvent(source, event)
+        }
+        lifeCycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifeCycleOwner.lifecycle.removeObserver(observer)
         }
     }
 }

@@ -37,12 +37,12 @@ class MainActivity : ComponentActivity() {
                             ChatScreen(navController = navController)
                         }
                         composable(
-                            route = Screen.ConversationScreen.route + "?conversationId={conversationId}",
+                            route = Screen.ConversationScreen.route + "?chatId={chatId}",
                             arguments = listOf(
                                 navArgument(
-                                    name = "conversationId"
+                                    name = "chatId"
                                 ) {
-                                    type = NavType.IntType
+                                    type = NavType.LongType
                                     defaultValue = -1
                                 }
                             )
