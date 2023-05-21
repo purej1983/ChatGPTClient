@@ -7,6 +7,7 @@ import com.thomaslam.chatgptclient.chatecompletion.data.remote.ChatCompletionSer
 import com.thomaslam.chatgptclient.chatecompletion.data.repository.ChatCompletionRepositoryImpl
 import com.thomaslam.chatgptclient.chatecompletion.domain.entity.Message
 import com.thomaslam.chatgptclient.chatecompletion.domain.repository.ChatCompletionRepository
+import com.thomaslam.chatgptclient.chatecompletion.util.MockDataCollections
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
@@ -103,22 +104,13 @@ class ChatCompletionRepositoryTest {
     fun testCreateCompletion() {
         runBlocking {
             val messages = listOf(
-                Message(
-                    role = "user",
-                    content = "Top 5 attractions in Birmingham"
-                ),
-                Message(
-                    role = "assistant",
-                    content = "1. Cadbury World - a chocolate-themed attraction that offers tours, demonstrations, and interactive exhibits. Located in Bournville, about 6 miles from Birmingham city center.\\n\\n2. Warwick Castle - a medieval fortress with extensive grounds, fortress walls, moat, and dungeons. Located in Warwick, about 22 miles southeast of Birmingham.\\n\\n3. Drayton Manor Theme Park - a large amusement park with rides, roller coasters, attractions, and a zoo. Located in Tamworth, about 16 miles northeast of Birmingham.\\n\\n4. Black Country Living Museum - an open-air museum that showcasing life during the industrial revolution, with reconstructed buildings, coal mines, and a tram system. Located in Dudley, about 10 miles west of Birmingham.\\n\\n5. The National Sea Life Centre - an aquarium with over 60 displays of marine life, including sharks, sea turtles, and tropical fish. Located in Birmingham city center."
-                ),
-                Message(
-                    role = "user",
-                    content = "how about in manchester?"
-                )
+                MockDataCollections.userMessage1,
+                MockDataCollections.assistantMessage1,
+                MockDataCollections.userMessage2
             )
             val reponse = repository.create(messages)
-            assert(reponse.role == FakeChatCompletionService.mockResponse.choices.first().message.role)
-            assert(reponse.content == FakeChatCompletionService.mockResponse.choices.first().message.content)
+            assert(reponse.role == MockDataCollections.assistantMessage2.role)
+            assert(reponse.content == MockDataCollections.assistantMessage2.content)
         }
     }
 }

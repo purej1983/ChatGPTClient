@@ -4,6 +4,7 @@ import com.thomaslam.chatgptclient.chatecompletion.data.repository.FakeChatCompl
 import com.thomaslam.chatgptclient.chatecompletion.domain.ChatCompletionUseCase
 import com.thomaslam.chatgptclient.chatecompletion.domain.entity.Message
 import com.thomaslam.chatgptclient.chatecompletion.domain.repository.ChatCompletionRepository
+import com.thomaslam.chatgptclient.chatecompletion.util.MockDataCollections
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
@@ -26,10 +27,7 @@ class ChatCompletionUseCaseTest {
     @Test
     fun testCreateChatCompletion(){
         val messages = listOf(
-            Message(
-                role = "user",
-                content = "Top 5 attractions in Birmingham"
-            )
+            MockDataCollections.userMessage1
         )
         runBlocking {
             val chatId = 1L
