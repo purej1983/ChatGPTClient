@@ -13,6 +13,11 @@ The Project is try to demo an android app connect the Chat GPT api
 3. in the project, there is a file called apikey.properties.samples in root directory, rename it as apikey.properties, then put the api key value get in pre-requisites and save
 4. Build and run the project
 
+## Diagram
+Here is the class diagram about the interaction between different classes
+![mermaid-diagram-2023-05-22-121654](https://github.com/purej1983/ChatGPTClient/assets/2437603/68b780cd-42fa-48a1-a881-dc65dbc296e6)
+
+
 ## awareness
 The http client default time out is 10s. However, some response will take longer than 10s. So I have change the default timeout to 20s.
 The config is located  in [AppModule](app/src/main/java/com/thomaslam/chatgptclient/di/AppModule.kt#L42)
