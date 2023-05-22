@@ -8,9 +8,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -24,6 +28,7 @@ import com.thomaslam.chatgptclient.chatecompletion.presentation.components.UserM
 import com.thomaslam.chatgptclient.ui.theme.ChatGPTClientTheme
 import com.thomaslam.chatgptclient.ui.theme.assistantBackground
 import com.thomaslam.chatgptclient.ui.theme.userBackground
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun Conversationscreen(
@@ -33,45 +38,66 @@ fun Conversationscreen(
         viewModel.state
     }
 
-    Column(
-        modifier  = Modifier
-            .fillMaxHeight()
-            .background(MaterialTheme.colors.userBackground),
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
-        LazyColumn(modifier =
-        Modifier
-            .fillMaxWidth()
-            .weight(1f)
-        ) {
-            items(state.messages) { item ->
-                if (item.role == "user") {
-                    UserMessageItem(
-                        content = item.content,
-                        backgroundColor = MaterialTheme.colors.userBackground
-                    )
-                } else {
-                    AssitantMessageItem(
-                        content = item.content,
-                        backgroundColor = MaterialTheme.colors.assistantBackground
+    val scaffoldState = rememberScaffoldState()
+    val listState = rememberLazyListState()
+    LaunchedEffect(state.messages) {
+        listState.scrollToItem(state.messages.size)
+    }
+    LaunchedEffect(key1 = true) {
+        viewModel.eventFlow.collectLatest { event ->
+            when(event) {
+                is ConversationViewModel.UiEvent.ShowSnackBar -> {
+                    scaffoldState.snackbarHostState.showSnackbar(
+                        message = event.message
                     )
                 }
             }
         }
-        if(state.isLoading) {
-            CircularProgressIndicator(
+    }
+
+    Scaffold(scaffoldState = scaffoldState)
+    {
+        Column(
+            modifier  = Modifier
+                .fillMaxHeight()
+                .background(MaterialTheme.colors.userBackground)
+                .padding(it),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            LazyColumn(modifier =
+            Modifier
+                .fillMaxWidth()
+                .weight(1f)
+            ) {
+                items(state.messages) { item ->
+                    if (item.role == "user") {
+                        UserMessageItem(
+                            content = item.content,
+                            backgroundColor = MaterialTheme.colors.userBackground
+                        )
+                    } else {
+                        AssitantMessageItem(
+                            content = item.content,
+                            backgroundColor = MaterialTheme.colors.assistantBackground
+                        )
+                    }
+                }
+            }
+            if(state.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(0.dp, 8.dp)
+                )
+            }
+            MessageSendBar(
                 modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(0.dp, 8.dp)
+                    .background(MaterialTheme.colors.userBackground),
+                onMessageButtonClick = {
+                    viewModel.send(it)
+                }
             )
         }
-        MessageSendBar(
-            modifier = Modifier
-                .background(MaterialTheme.colors.userBackground),
-            onMessageButtonClick = {
-                viewModel.send(it)
-            }
-        )
     }
 }
 

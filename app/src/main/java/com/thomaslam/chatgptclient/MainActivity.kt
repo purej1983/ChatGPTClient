@@ -47,7 +47,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         ) {
-                            Conversationscreen(navController = navController)
+                            Conversationscreen()
                         }
                     }
                 }

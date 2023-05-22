@@ -10,6 +10,8 @@ import com.thomaslam.chatgptclient.chatecompletion.domain.entity.Message
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -22,6 +24,9 @@ class ConversationViewModel @Inject constructor(
     private val _state = mutableStateOf(ConversationScreenUIState())
     val state: State<ConversationScreenUIState> = _state
     private var currentChatId: Long = -1
+    private val _eventFlow = MutableSharedFlow<UiEvent>()
+    val eventFlow = _eventFlow.asSharedFlow()
+
 
     init {
         savedStateHandle.get<Long>("chatId")?.let { chatId ->
@@ -32,7 +37,7 @@ class ConversationViewModel @Inject constructor(
 
     private fun getConversation(chatId: Long) {
         viewModelScope.launch {
-            chatCompletionUseCase.getConversation(chatId)?.also { messages ->
+            chatCompletionUseCase.getConversation(chatId).also { messages ->
                 _state.value = state.value.copy(
                     messages = messages
                 )
@@ -50,7 +55,7 @@ class ConversationViewModel @Inject constructor(
                 setLoading(true)
                 chatCompletionUseCase.createCompletion(currentChatId, messages)
             } catch (e: Exception) {
-
+                _eventFlow.emit(UiEvent.ShowSnackBar("Error occurred! Please try again later"))
             } finally {
                 setLoading(false)
             }
@@ -73,5 +78,8 @@ class ConversationViewModel @Inject constructor(
             chatCompletionUseCase.updateLastUserMessage(currentChatId, message.content)
             chatCompletionUseCase.saveMessage(currentChatId, message)
         }
+    }
+    sealed class UiEvent {
+        data class ShowSnackBar(val message: String): UiEvent()
     }
 }
