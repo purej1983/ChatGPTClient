@@ -39,8 +39,8 @@ class AppModule {
             .Builder()
             .addInterceptor(httpLoggingInterceptor)
             .addInterceptor(authorizationInterceptor)
-            .readTimeout(3, TimeUnit.SECONDS)
-            .connectTimeout(3, TimeUnit.SECONDS)
+            .readTimeout(20, TimeUnit.SECONDS)
+            .connectTimeout(20, TimeUnit.SECONDS)
             .build()
 
     @Singleton
