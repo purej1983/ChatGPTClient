@@ -4,4 +4,5 @@ import com.thomaslam.chatgptclient.chatecompletion.domain.entity.Message
 
 data class ConversationScreenUIState(
     val messages: List<Message> = listOf(),
+    val isLoading: Boolean = false
 )

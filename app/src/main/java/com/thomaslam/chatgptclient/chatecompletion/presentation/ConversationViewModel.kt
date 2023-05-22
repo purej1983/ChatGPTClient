@@ -46,9 +46,22 @@ class ConversationViewModel @Inject constructor(
         val messages = _state.value.messages + newUserMessage
         appendMessage(newUserMessage)
         scope.launch {
-            chatCompletionUseCase.createCompletion(currentChatId, messages)
+            try {
+                setLoading(true)
+                chatCompletionUseCase.createCompletion(currentChatId, messages)
+            } catch (e: Exception) {
+
+            } finally {
+                setLoading(false)
+            }
             getConversation(currentChatId)
         }
+    }
+
+    private fun setLoading(isLoading: Boolean) {
+        _state.value = state.value.copy(
+            isLoading = isLoading
+        )
     }
 
     private fun appendMessage(message: Message) {
