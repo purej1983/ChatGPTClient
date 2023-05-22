@@ -3,7 +3,6 @@ package com.thomaslam.chatgptclient.di
 import android.app.Application
 import androidx.room.Room
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.ChatGPTDatabase
-import com.thomaslam.chatgptclient.chatecompletion.data.datasource.ChatGptDao
 import com.thomaslam.chatgptclient.chatecompletion.data.remote.ChatCompletionService
 import com.thomaslam.chatgptclient.chatecompletion.data.remote.interceptor.AuthorizationInterceptor
 import com.thomaslam.chatgptclient.chatecompletion.data.repository.ChatCompletionRepositoryImpl
@@ -40,8 +39,8 @@ class AppModule {
             .Builder()
             .addInterceptor(httpLoggingInterceptor)
             .addInterceptor(authorizationInterceptor)
-            .readTimeout(15, TimeUnit.SECONDS)
-            .connectTimeout(15, TimeUnit.SECONDS)
+            .readTimeout(3, TimeUnit.SECONDS)
+            .connectTimeout(3, TimeUnit.SECONDS)
             .build()
 
     @Singleton

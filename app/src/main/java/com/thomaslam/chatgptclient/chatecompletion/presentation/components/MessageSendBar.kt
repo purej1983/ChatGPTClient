@@ -8,7 +8,6 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldColors
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -40,7 +39,7 @@ fun MessageSendBar(
             modifier = Modifier.weight(1f),
             value = value,
             onValueChange = { value = it} ,
-            placeholder = { Text("Enter Email") },
+            placeholder = { Text("Enter your message") },
             colors = TextFieldDefaults.textFieldColors(textColor = Color.White, placeholderColor = Color.White),
         )
         IconButton(
