@@ -15,7 +15,8 @@ The Project is try to demo an android app connect the Chat GPT api
 
 ## Diagram
 Here is the class diagram about the interaction between different classes
-![mermaid-diagram-2023-05-22-121654](https://github.com/purej1983/ChatGPTClient/assets/2437603/68b780cd-42fa-48a1-a881-dc65dbc296e6)
+![mermaid-diagram-2023-05-22-121654](https://github.com/purej1983/ChatGPTClient/assets/2437603/f4f45e03-94a1-4c93-9acc-a7136cc89323)
+
 
 
 ## awareness
