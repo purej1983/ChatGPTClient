@@ -8,6 +8,8 @@ import com.thomaslam.chatgptclient.chatecompletion.domain.ChatCompletionUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -26,13 +28,14 @@ class ChatViewModel @Inject constructor(
         getChats()
     }
 
-    fun getChats() {
-        viewModelScope.launch {
-            val chats = chatCompletionUseCase.getChats()
-            _state.value = state.value.copy(
-                chats = chats
-            )
-        }
+    private fun getChats() {
+        chatCompletionUseCase.getChats()
+            .onEach { chats ->
+                _state.value = state.value.copy(
+                    chats = chats
+                )
+            }
+            .launchIn(viewModelScope)
     }
     fun newChat() {
         viewModelScope.launch {

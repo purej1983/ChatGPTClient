@@ -4,10 +4,14 @@ import com.thomaslam.chatgptclient.chatecompletion.domain.entity.Chat
 import com.thomaslam.chatgptclient.chatecompletion.domain.entity.Message
 import com.thomaslam.chatgptclient.chatecompletion.domain.repository.ChatCompletionRepository
 import com.thomaslam.chatgptclient.chatecompletion.util.MockDataCollections
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 
 class FakeChatCompletionRepository: ChatCompletionRepository {
-    override suspend fun getChats(): List<Chat> {
-        return MockDataCollections.chats
+    override fun getChats(): Flow<List<Chat>> {
+        return flow{
+          emit(MockDataCollections.chats)
+        }
     }
 
     override suspend fun newChat(): Long {
@@ -26,10 +30,14 @@ class FakeChatCompletionRepository: ChatCompletionRepository {
         return MockDataCollections.assistantMessage1
     }
 
-    override suspend fun getConversation(id: Long): List<Message> {
-        return listOf(
-            MockDataCollections.userMessage1,
-            MockDataCollections.assistantMessage1
-        )
+    override fun getConversation(id: Long): Flow<List<Message>> {
+        return flow {
+            emit(
+                listOf(
+                    MockDataCollections.userMessage1,
+                    MockDataCollections.assistantMessage1
+                )
+            )
+        }
     }
 }

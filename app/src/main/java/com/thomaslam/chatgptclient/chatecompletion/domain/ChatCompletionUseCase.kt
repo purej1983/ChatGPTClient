@@ -3,11 +3,12 @@ package com.thomaslam.chatgptclient.chatecompletion.domain
 import com.thomaslam.chatgptclient.chatecompletion.domain.entity.Chat
 import com.thomaslam.chatgptclient.chatecompletion.domain.entity.Message
 import com.thomaslam.chatgptclient.chatecompletion.domain.repository.ChatCompletionRepository
+import kotlinx.coroutines.flow.Flow
 
 class ChatCompletionUseCase (
     private val repository: ChatCompletionRepository
 ) {
-    suspend fun getChats(): List<Chat> {
+    fun getChats(): Flow<List<Chat>> {
         return repository.getChats()
     }
     suspend fun newChat(): Long {
@@ -19,7 +20,7 @@ class ChatCompletionUseCase (
         return assistantMessage
     }
 
-    suspend fun getConversation(id: Long): List<Message> {
+    fun getConversation(id: Long): Flow<List<Message>> {
         return repository.getConversation(id)
     }
 

@@ -58,11 +58,6 @@ fun ChatScreen(
             }
         }
     }
-    ComposableLifecycle { source, event ->
-        if (event == Lifecycle.Event.ON_RESUME) {
-            viewModel.getChats()
-        }
-    }
 
     Scaffold(
         floatingActionButton = {

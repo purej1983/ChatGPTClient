@@ -1,4 +1,4 @@
-package com.thomaslam.chatgptclient.chatecompletion.data.remote.interceptor
+package com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.interceptor
 
 import com.thomaslam.chatgptclient.BuildConfig
 import okhttp3.Interceptor

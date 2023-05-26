@@ -13,9 +13,8 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import com.thomaslam.chatgptclient.chatecompletion.util.MockDataCollections
 import io.mockk.coEvery
-import junit.framework.TestCase.assertEquals
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestCoroutineScheduler
 
@@ -24,6 +23,7 @@ class ChatScreenViewModelTest {
     private lateinit var usecase: ChatCompletionUseCase
 
     private lateinit var viewModel: ChatViewModel
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Before
     fun setup(){
         scheduler = TestCoroutineScheduler()
@@ -65,16 +65,8 @@ class ChatScreenViewModelTest {
         job.cancel()
     }
 
-    @Test
 
-    fun getChats() = runTest {
-        coEvery { usecase.getChats() } returns MockDataCollections.chats
-        viewModel.getChats()
-        scheduler.advanceUntilIdle()
-        assertEquals(viewModel.state.value.chats, MockDataCollections.chats)
-    }
-
-
+    @OptIn(ExperimentalCoroutinesApi::class)
     @After
     fun tearDown() {
         Dispatchers.resetMain() // reset the main dispatcher to the original Main dispatcher

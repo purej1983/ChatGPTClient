@@ -2,9 +2,9 @@ package com.thomaslam.chatgptclient.di
 
 import android.app.Application
 import androidx.room.Room
-import com.thomaslam.chatgptclient.chatecompletion.data.datasource.ChatGPTDatabase
-import com.thomaslam.chatgptclient.chatecompletion.data.remote.ChatCompletionService
-import com.thomaslam.chatgptclient.chatecompletion.data.remote.interceptor.AuthorizationInterceptor
+import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.ChatGPTDatabase
+import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.ChatCompletionService
+import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.interceptor.AuthorizationInterceptor
 import com.thomaslam.chatgptclient.chatecompletion.data.repository.ChatCompletionRepositoryImpl
 import com.thomaslam.chatgptclient.chatecompletion.domain.ChatCompletionUseCase
 import com.thomaslam.chatgptclient.chatecompletion.domain.repository.ChatCompletionRepository
@@ -53,7 +53,8 @@ class AppModule {
 
     @Singleton
     @Provides
-    fun provideChatCompletionService(retrofit: Retrofit): ChatCompletionService = retrofit.create(ChatCompletionService::class.java)
+    fun provideChatCompletionService(retrofit: Retrofit): ChatCompletionService = retrofit.create(
+        ChatCompletionService::class.java)
 
     @Singleton
     @Provides

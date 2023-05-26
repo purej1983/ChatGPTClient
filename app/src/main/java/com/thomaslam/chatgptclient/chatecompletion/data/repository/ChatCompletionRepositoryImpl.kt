@@ -1,21 +1,30 @@
 package com.thomaslam.chatgptclient.chatecompletion.data.repository
 
-import com.thomaslam.chatgptclient.chatecompletion.data.datasource.ChatGptDao
-import com.thomaslam.chatgptclient.chatecompletion.data.local.entity.ChatEntity
-import com.thomaslam.chatgptclient.chatecompletion.data.local.entity.ConversationEntity
-import com.thomaslam.chatgptclient.chatecompletion.data.remote.ChatCompletionService
-import com.thomaslam.chatgptclient.chatecompletion.data.remote.dto.ChatCompletionRequest
+import androidx.room.Entity
+import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.ChatGptDao
+import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ChatEntity
+import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ConversationEntity
+import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.ChatCompletionService
+import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.dto.ChatCompletionRequest
 import com.thomaslam.chatgptclient.chatecompletion.domain.entity.Chat
 import com.thomaslam.chatgptclient.chatecompletion.domain.entity.Message
 import com.thomaslam.chatgptclient.chatecompletion.domain.repository.ChatCompletionRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flatMapConcat
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 
 class ChatCompletionRepositoryImpl (
     private val chatGptDao: ChatGptDao,
     private val chatCompletionService: ChatCompletionService
 ) : ChatCompletionRepository {
-    override suspend fun getChats(): List<Chat> {
-        return chatGptDao.getChats().map {
-            it.toChat()
+    override fun getChats(): Flow<List<Chat>> {
+        return flow {
+            chatGptDao.getChats().collect { list ->
+                emit(list.map { it.toChat() })
+            }
         }
     }
 
@@ -50,9 +59,11 @@ class ChatCompletionRepositoryImpl (
         }
     }
 
-    override suspend fun getConversation(id: Long): List<Message> {
-        return chatGptDao.getConversationByChatId(id).map {
-            it.toMessage()
+    override fun getConversation(id: Long): Flow<List<Message>> {
+        return flow {
+            chatGptDao.getConversationByChatId(id).collect {list ->
+                emit(list.map { it.toMessage() })
+            }
         }
     }
 }

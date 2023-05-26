@@ -12,6 +12,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -36,13 +38,11 @@ class ConversationViewModel @Inject constructor(
     }
 
     private fun getConversation(chatId: Long) {
-        viewModelScope.launch {
-            chatCompletionUseCase.getConversation(chatId).also { messages ->
-                _state.value = state.value.copy(
-                    messages = messages
-                )
-            }
-        }
+        chatCompletionUseCase.getConversation(chatId).onEach { messages ->
+            _state.value = state.value.copy(
+                messages = messages
+            )
+        }.launchIn(viewModelScope)
     }
 
     fun send(content: String) {
@@ -59,7 +59,6 @@ class ConversationViewModel @Inject constructor(
             } finally {
                 setLoading(false)
             }
-            getConversation(currentChatId)
         }
     }
 

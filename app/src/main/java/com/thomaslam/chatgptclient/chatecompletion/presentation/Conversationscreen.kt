@@ -1,5 +1,6 @@
 package com.thomaslam.chatgptclient.chatecompletion.presentation
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -41,8 +42,9 @@ fun Conversationscreen(
     val scaffoldState = rememberScaffoldState()
     val listState = rememberLazyListState()
     LaunchedEffect(state.messages) {
-        listState.scrollToItem(state.messages.size)
+        listState.animateScrollToItem(state.messages.size -1 )
     }
+
     LaunchedEffect(key1 = true) {
         viewModel.eventFlow.collectLatest { event ->
             when(event) {
@@ -67,7 +69,8 @@ fun Conversationscreen(
             LazyColumn(modifier =
             Modifier
                 .fillMaxWidth()
-                .weight(1f)
+                .weight(1f),
+                state = listState
             ) {
                 items(state.messages) { item ->
                     if (item.role == "user") {

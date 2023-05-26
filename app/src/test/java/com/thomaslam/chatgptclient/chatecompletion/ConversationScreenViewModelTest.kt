@@ -9,9 +9,12 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import junit.framework.TestCase
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Before
@@ -22,6 +25,7 @@ class ConversationScreenViewModelTest {
     private lateinit var usecase: ChatCompletionUseCase
 
     private lateinit var viewModel: ConversationViewModel
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Before
     fun setup(){
         scheduler = TestCoroutineScheduler()
@@ -34,17 +38,19 @@ class ConversationScreenViewModelTest {
     }
 
     @Test
-    fun testSend() {
+    fun testSend() = runTest{
         val id = 1L
         val content = "Test Message"
-        coEvery { usecase.getConversation(id) } returns listOf()
+        val flow = MutableSharedFlow<List<Message>>()
+        coEvery { usecase.getConversation(id) } returns flow
         viewModel.send(content)
-        coEvery { usecase.getConversation(id) } returns listOf(Message(content = content))
+        flow.emit(listOf(Message(content = content)))
         scheduler.advanceUntilIdle()
         TestCase.assertEquals(viewModel.state.value.messages, listOf(Message(content = content)))
     }
 
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @After
     fun tearDown() {
         Dispatchers.resetMain() // reset the main dispatcher to the original Main dispatcher
