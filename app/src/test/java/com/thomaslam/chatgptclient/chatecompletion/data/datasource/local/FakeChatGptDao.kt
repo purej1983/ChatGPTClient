@@ -3,8 +3,12 @@ package com.thomaslam.chatgptclient.chatecompletion.data.datasource.local
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ChatEntity
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ConversationEntity
 import com.thomaslam.chatgptclient.chatecompletion.util.MockDataCollections
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 
 class FakeChatGptDao: ChatGptDao {
+    private val chatFlow = MutableSharedFlow<List<ChatEntity>>()
+    private val conversationFlow = MutableSharedFlow<List<ConversationEntity>>()
     private var chatAutoId: Long = 2
     private var conversationAutoId: Long = 2
 
@@ -18,6 +22,7 @@ class FakeChatGptDao: ChatGptDao {
                 id = ++chatAutoId
             )
         )
+        emitChatChange()
         return chatAutoId
     }
 
@@ -30,20 +35,31 @@ class FakeChatGptDao: ChatGptDao {
                 id = ++conversationAutoId
             )
         )
+        emitConversationChange()
     }
 
     override suspend fun updateLastUserMessage(chatId: Long, lastUserMessage: String) {
         val index = chats.indexOfFirst { it.id == chatId }
         chats[index] = ChatEntity(lastUserMessage, chatId)
+        emitChatChange()
     }
 
-    override suspend fun getChats(): List<ChatEntity> {
-        return chats
+    override fun getChats(): Flow<List<ChatEntity>> {
+        return chatFlow
     }
 
-    override suspend fun getConversationByChatId(chatId: Long): List<ConversationEntity> {
-        return mockConversations
+    override fun getConversationByChatId(chatId: Long): Flow<List<ConversationEntity>> {
+        return conversationFlow
     }
+
+    suspend fun emitChatChange() {
+        chatFlow.emit(chats)
+    }
+
+    suspend fun emitConversationChange(){
+        conversationFlow.emit(conversations)
+    }
+
     companion object {
         val mockChats = mutableListOf(
             ChatEntity("testMessage1", 1),
