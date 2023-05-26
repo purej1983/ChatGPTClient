@@ -1,9 +1,9 @@
-package com.thomaslam.chatgptclient.chatecompletion.data.datasource
+package com.thomaslam.chatgptclient.chatecompletion.data.datasource.local
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import com.thomaslam.chatgptclient.chatecompletion.data.local.entity.ChatEntity
-import com.thomaslam.chatgptclient.chatecompletion.data.local.entity.ConversationEntity
+import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ChatEntity
+import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ConversationEntity
 
 @Database(
     entities = [ChatEntity::class, ConversationEntity::class],

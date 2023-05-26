@@ -1,9 +1,9 @@
 package com.thomaslam.chatgptclient.chatecompletion
 
-import com.thomaslam.chatgptclient.chatecompletion.data.datasource.ChatGptDao
+import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.ChatGptDao
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.FakeChatGptDao
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.FakeChatCompletionService
-import com.thomaslam.chatgptclient.chatecompletion.data.remote.ChatCompletionService
+import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.ChatCompletionService
 import com.thomaslam.chatgptclient.chatecompletion.data.repository.ChatCompletionRepositoryImpl
 import com.thomaslam.chatgptclient.chatecompletion.domain.entity.Message
 import com.thomaslam.chatgptclient.chatecompletion.domain.repository.ChatCompletionRepository

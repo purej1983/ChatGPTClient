@@ -1,4 +1,4 @@
-package com.thomaslam.chatgptclient.chatecompletion.data.remote.dto
+package com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.dto
 
 import com.google.gson.annotations.SerializedName
 

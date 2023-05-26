@@ -1,4 +1,4 @@
-package com.thomaslam.chatgptclient.chatecompletion.data.local.entity
+package com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey

@@ -1,8 +1,7 @@
 package com.thomaslam.chatgptclient.chatecompletion.data.datasource.local
 
-import com.thomaslam.chatgptclient.chatecompletion.data.datasource.ChatGptDao
-import com.thomaslam.chatgptclient.chatecompletion.data.local.entity.ChatEntity
-import com.thomaslam.chatgptclient.chatecompletion.data.local.entity.ConversationEntity
+import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ChatEntity
+import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ConversationEntity
 import com.thomaslam.chatgptclient.chatecompletion.util.MockDataCollections
 
 class FakeChatGptDao: ChatGptDao {
