@@ -6,19 +6,28 @@ import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.FakeCh
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.ChatCompletionService
 import com.thomaslam.chatgptclient.chatecompletion.data.repository.ChatCompletionRepositoryImpl
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Chat
+import com.thomaslam.chatgptclient.chatecompletion.domain.model.ChatState
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Message
 import com.thomaslam.chatgptclient.chatecompletion.domain.repository.ChatCompletionRepository
 import com.thomaslam.chatgptclient.chatecompletion.domain.util.Resource
 import com.thomaslam.chatgptclient.chatecompletion.util.MockDataCollections
+import io.mockk.coEvery
+import io.mockk.mockkObject
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
+import junit.framework.TestCase.assertNull
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Before
 import org.junit.Test
+import retrofit2.HttpException
+import retrofit2.Response
+import java.io.IOException
 
 class ChatCompletionRepositoryTest {
     private lateinit var repository: ChatCompletionRepository
@@ -156,6 +165,85 @@ class ChatCompletionRepositoryTest {
             assertNotNull(response)
             assert(response?.role == MockDataCollections.assistantMessage2.role)
             assert(response?.content == MockDataCollections.assistantMessage2.content)
+        }
+    }
+
+    @Test
+    fun testCreateCompletionWithHttpException() {
+        runTest {
+            val messages = listOf(
+                MockDataCollections.userMessage1,
+                MockDataCollections.assistantMessage1,
+                MockDataCollections.userMessage2
+            )
+            mockkObject(api)
+            coEvery { api.createChatCompletion(any()) } throws HttpException(
+                Response.error<Any>(500, "Error".toResponseBody("plain/text".toMediaTypeOrNull()))
+            )
+
+            val error = repository.create(messages)
+            assert(error is Resource.Error)
+            val response = error.data
+            assertNull(response)
+            val message = error.message
+            assertEquals(message, "Oops, something went wrong!")
+        }
+    }
+
+    @Test
+    fun testCreateCompletionWithIOException() {
+        runTest {
+            val messages = listOf(
+                MockDataCollections.userMessage1,
+                MockDataCollections.assistantMessage1,
+                MockDataCollections.userMessage2
+            )
+            mockkObject(api)
+            coEvery { api.createChatCompletion(any()) } throws IOException("Not Network")
+
+            val error = repository.create(messages)
+            assert(error is Resource.Error)
+            val response = error.data
+            assertNull(response)
+            val message = error.message
+            assertEquals(message, "Couldn't reach server, check your internet connection.")
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun testUpdateChatState() {
+        runTest {
+            val values = mutableListOf<List<Chat>>()
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                repository.getChats().toList(values)
+            }
+
+            val id = 2L
+            val newState = ChatState.ERROR
+            repository.updateChatState(id, newState)
+            val chats = values[0]
+            val filtered = chats.first { it.id == id }
+            assert(filtered.id == id)
+            assert(filtered.state == newState)
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun resetChatState() {
+        runTest {
+            val values = mutableListOf<List<Chat>>()
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                repository.getChats().toList(values)
+            }
+
+            val id = 2L
+            repository.resetChatState(id)
+            val chats = values[0]
+            val filtered = chats.first { it.id == id }
+            assert(filtered.id == id)
+            assert(filtered.state == ChatState.IDLE)
         }
     }
 }
