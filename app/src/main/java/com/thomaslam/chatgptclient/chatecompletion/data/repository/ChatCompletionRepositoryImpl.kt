@@ -1,20 +1,19 @@
 package com.thomaslam.chatgptclient.chatecompletion.data.repository
 
-import androidx.room.Entity
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.ChatGptDao
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ChatEntity
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ConversationEntity
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.ChatCompletionService
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.dto.ChatCompletionRequest
-import com.thomaslam.chatgptclient.chatecompletion.domain.entity.Chat
-import com.thomaslam.chatgptclient.chatecompletion.domain.entity.Message
+import com.thomaslam.chatgptclient.chatecompletion.domain.model.Chat
+import com.thomaslam.chatgptclient.chatecompletion.domain.model.ChatState
+import com.thomaslam.chatgptclient.chatecompletion.domain.model.Message
 import com.thomaslam.chatgptclient.chatecompletion.domain.repository.ChatCompletionRepository
+import com.thomaslam.chatgptclient.chatecompletion.domain.util.Resource
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
+import retrofit2.HttpException
+import java.io.IOException
 
 class ChatCompletionRepositoryImpl (
     private val chatGptDao: ChatGptDao,
@@ -36,6 +35,14 @@ class ChatCompletionRepositoryImpl (
         chatGptDao.updateLastUserMessage(chatId, content)
     }
 
+    override suspend fun resetChatState(chatId: Long) {
+        chatGptDao.resetChatState(chatId)
+    }
+
+    override suspend fun updateChatState(chatId: Long, state: ChatState) {
+        chatGptDao.updateChatState(chatId, state)
+    }
+
     override suspend fun saveLocalMessage(chatId :Long, message: Message) {
         chatGptDao.insertConversation(
             ConversationEntity(
@@ -46,16 +53,22 @@ class ChatCompletionRepositoryImpl (
         )
     }
 
-    override suspend fun create(messages: List<Message>): Message {
+    override suspend fun create(messages: List<Message>): Resource<Message> {
         try {
             val response = chatCompletionService.createChatCompletion(
                 ChatCompletionRequest(
                     messages = messages
                 )
             )
-            return response.choices.first().message
-        } catch (e: Exception) {
-            throw e
+            return Resource.Success(response.choices.first().message)
+        } catch(e: HttpException) {
+            return Resource.Error(
+                message = "Oops, something went wrong!"
+            )
+        } catch(e: IOException) {
+            return Resource.Error(
+                message = "Couldn't reach server, check your internet connection."
+            )
         }
     }
 

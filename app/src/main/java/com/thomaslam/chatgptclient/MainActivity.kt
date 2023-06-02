@@ -16,6 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.thomaslam.chatgptclient.chatecompletion.presentation.ChatScreen
 import com.thomaslam.chatgptclient.chatecompletion.presentation.Conversationscreen
+import com.thomaslam.chatgptclient.chatecompletion.presentation.components.CustomNavigation
 import com.thomaslam.chatgptclient.chatecompletion.presentation.util.Screen
 import com.thomaslam.chatgptclient.ui.theme.ChatGPTClientTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -31,25 +32,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    val navController = rememberNavController()
-                    NavHost(navController = navController, startDestination = Screen.ChatScreen.route) {
-                        composable(route = Screen.ChatScreen.route) {
-                            ChatScreen(navController = navController)
-                        }
-                        composable(
-                            route = Screen.ConversationScreen.route + "?chatId={chatId}",
-                            arguments = listOf(
-                                navArgument(
-                                    name = "chatId"
-                                ) {
-                                    type = NavType.LongType
-                                    defaultValue = -1
-                                }
-                            )
-                        ) {
-                            Conversationscreen()
-                        }
-                    }
+                    CustomNavigation()
                 }
 
             }

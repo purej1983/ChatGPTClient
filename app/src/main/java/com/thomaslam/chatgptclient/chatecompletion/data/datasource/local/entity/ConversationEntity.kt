@@ -3,7 +3,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
-import com.thomaslam.chatgptclient.chatecompletion.domain.entity.Message
+import com.thomaslam.chatgptclient.chatecompletion.domain.model.Message
 
 @Entity(
     tableName = "Conversation",

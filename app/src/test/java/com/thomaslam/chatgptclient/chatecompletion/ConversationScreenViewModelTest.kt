@@ -2,7 +2,7 @@ package com.thomaslam.chatgptclient.chatecompletion
 
 import androidx.lifecycle.SavedStateHandle
 import com.thomaslam.chatgptclient.chatecompletion.domain.ChatCompletionUseCase
-import com.thomaslam.chatgptclient.chatecompletion.domain.entity.Message
+import com.thomaslam.chatgptclient.chatecompletion.domain.model.Message
 import com.thomaslam.chatgptclient.chatecompletion.presentation.ConversationViewModel
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery

@@ -5,11 +5,13 @@ import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.FakeCha
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.FakeChatCompletionService
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.ChatCompletionService
 import com.thomaslam.chatgptclient.chatecompletion.data.repository.ChatCompletionRepositoryImpl
-import com.thomaslam.chatgptclient.chatecompletion.domain.entity.Chat
-import com.thomaslam.chatgptclient.chatecompletion.domain.entity.Message
+import com.thomaslam.chatgptclient.chatecompletion.domain.model.Chat
+import com.thomaslam.chatgptclient.chatecompletion.domain.model.Message
 import com.thomaslam.chatgptclient.chatecompletion.domain.repository.ChatCompletionRepository
+import com.thomaslam.chatgptclient.chatecompletion.domain.util.Resource
 import com.thomaslam.chatgptclient.chatecompletion.util.MockDataCollections
 import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertNotNull
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
@@ -147,9 +149,13 @@ class ChatCompletionRepositoryTest {
                 MockDataCollections.assistantMessage1,
                 MockDataCollections.userMessage2
             )
-            val reponse = repository.create(messages)
-            assert(reponse.role == MockDataCollections.assistantMessage2.role)
-            assert(reponse.content == MockDataCollections.assistantMessage2.content)
+
+            val success = repository.create(messages)
+            assert(success is Resource.Success)
+            val response = success.data
+            assertNotNull(response)
+            assert(response?.role == MockDataCollections.assistantMessage2.role)
+            assert(response?.content == MockDataCollections.assistantMessage2.content)
         }
     }
 }

@@ -2,6 +2,7 @@ package com.thomaslam.chatgptclient.chatecompletion.data.datasource.local
 
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ChatEntity
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ConversationEntity
+import com.thomaslam.chatgptclient.chatecompletion.domain.model.ChatState
 import com.thomaslam.chatgptclient.chatecompletion.util.MockDataCollections
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -40,8 +41,16 @@ class FakeChatGptDao: ChatGptDao {
 
     override suspend fun updateLastUserMessage(chatId: Long, lastUserMessage: String) {
         val index = chats.indexOfFirst { it.id == chatId }
-        chats[index] = ChatEntity(lastUserMessage, chatId)
+        chats[index] = ChatEntity(lastUserMessage = lastUserMessage, id = chatId)
         emitChatChange()
+    }
+
+    override suspend fun resetChatState(chatId: Long) {
+
+    }
+
+    override suspend fun updateChatState(chatId: Long, state: ChatState) {
+
     }
 
     override fun getChats(): Flow<List<ChatEntity>> {
@@ -62,8 +71,8 @@ class FakeChatGptDao: ChatGptDao {
 
     companion object {
         val mockChats = mutableListOf(
-            ChatEntity("testMessage1", 1),
-            ChatEntity("testMessage2", 2),
+            ChatEntity(lastUserMessage = "testMessage1", id = 1),
+            ChatEntity(lastUserMessage = "testMessage2", id = 2),
         )
 
         val mockConversations = mutableListOf(
