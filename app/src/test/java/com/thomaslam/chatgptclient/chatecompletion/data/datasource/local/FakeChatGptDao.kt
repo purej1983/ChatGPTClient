@@ -46,11 +46,15 @@ class FakeChatGptDao: ChatGptDao {
     }
 
     override suspend fun resetChatState(chatId: Long) {
-
+        val index = chats.indexOfFirst { it.id == chatId }
+        chats[index] = ChatEntity(state = ChatState.IDLE, id = chatId)
+        emitChatChange()
     }
 
     override suspend fun updateChatState(chatId: Long, state: ChatState) {
-
+        val index = chats.indexOfFirst { it.id == chatId }
+        chats[index] = ChatEntity(state = state, id = chatId)
+        emitChatChange()
     }
 
     override fun getChats(): Flow<List<ChatEntity>> {

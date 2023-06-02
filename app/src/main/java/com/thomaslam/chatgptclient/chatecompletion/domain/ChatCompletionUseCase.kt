@@ -16,9 +16,6 @@ class ChatCompletionUseCase (
     private val _errorEventFlow = MutableSharedFlow<ErrorEvent>()
     val errorEventFlow = _errorEventFlow.asSharedFlow()
 
-    private val _chatEventFlow = MutableSharedFlow<ChatEvent>()
-    val chatEventFlow = _chatEventFlow.asSharedFlow()
-
     fun getChats(): Flow<List<Chat>> {
         return repository.getChats()
     }
@@ -36,7 +33,6 @@ class ChatCompletionUseCase (
                 saveMessage(chatId, assistantMessage)
                 updateChatState(chatId = chatId, state = ChatState.NEW_MESSAGE)
                 emit(Resource.Success(assistantMessage))
-                _chatEventFlow.emit(ChatEvent.NewConversation(chatId))
             }
         } else if (chatCompletionResult is Resource.Error) {
             val errorMessage = chatCompletionResult.message ?: ""
@@ -67,9 +63,5 @@ class ChatCompletionUseCase (
 
     sealed class ErrorEvent(val errorMessage: String) {
         class ChatCompletionError(val chatId: Long, errorMessage: String): ErrorEvent(errorMessage)
-    }
-
-    sealed class ChatEvent {
-        data class NewConversation(val chatId: Long): ChatEvent()
     }
 }

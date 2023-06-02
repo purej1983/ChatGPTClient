@@ -7,29 +7,49 @@ import com.thomaslam.chatgptclient.chatecompletion.domain.repository.ChatComplet
 import com.thomaslam.chatgptclient.chatecompletion.domain.util.Resource
 import com.thomaslam.chatgptclient.chatecompletion.util.MockDataCollections
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import org.jetbrains.annotations.VisibleForTesting
 
 class FakeChatCompletionRepository: ChatCompletionRepository {
+    private val _chats: MutableList<Chat> = MockDataCollections.chats.toMutableList()
+    private val _messages: MutableList<Message> = mutableListOf(
+            MockDataCollections.userMessage1,
+            MockDataCollections.assistantMessage1
+    )
+    private var chatAutoId: Long = 2
+    private val chatFlow = MutableSharedFlow<List<Chat>>()
+    private val messageFlow = MutableSharedFlow<List<Message>>()
     override fun getChats(): Flow<List<Chat>> {
-        return flow{
-          emit(MockDataCollections.chats)
-        }
+        return chatFlow
     }
 
     override suspend fun newChat(): Long {
-        return 2L
+        _chats.add(
+            Chat(lastUserMessage = "New Chat", id = ++chatAutoId)
+        )
+        emitChatChange()
+        return chatAutoId
     }
 
     override suspend fun updateLastUserMessage(chatId: Long, content: String) {
-
+        val index = _chats.indexOfFirst { it.id == chatId }
+        val chat = _chats.first {it.id == chatId}
+        _chats[index] = chat.copy(lastUserMessage = content)
+        emitChatChange()
     }
 
     override suspend fun resetChatState(chatId: Long) {
-
+        val index = _chats.indexOfFirst { it.id == chatId }
+        val chat = _chats.first {it.id == chatId}
+        _chats[index] = chat.copy(state = ChatState.IDLE)
+        emitChatChange()
     }
 
     override suspend fun updateChatState(chatId: Long, state: ChatState) {
-
+        val index = _chats.indexOfFirst { it.id == chatId }
+        val chat = _chats.first {it.id == chatId}
+        _chats[index] = chat.copy(state = state)
+        emitChatChange()
     }
 
     override suspend fun saveLocalMessage(chatId: Long, message: Message) {
@@ -41,13 +61,16 @@ class FakeChatCompletionRepository: ChatCompletionRepository {
     }
 
     override fun getConversation(id: Long): Flow<List<Message>> {
-        return flow {
-            emit(
-                listOf(
-                    MockDataCollections.userMessage1,
-                    MockDataCollections.assistantMessage1
-                )
-            )
-        }
+        return messageFlow
+    }
+
+    @VisibleForTesting
+    suspend fun emitChatChange() {
+        chatFlow.emit(_chats)
+    }
+
+    @VisibleForTesting
+    suspend fun emitMessageChange() {
+        messageFlow.emit(_messages)
     }
 }
