@@ -42,19 +42,8 @@ fun Conversationscreen(
     val scaffoldState = rememberScaffoldState()
     val listState = rememberLazyListState()
     LaunchedEffect(state.messages) {
-        listState.animateScrollToItem(state.messages.size -1 )
-    }
-
-    LaunchedEffect(key1 = true) {
-        viewModel.eventFlow.collectLatest { event ->
-            when(event) {
-                is ConversationViewModel.UiEvent.ShowSnackBar -> {
-                    scaffoldState.snackbarHostState.showSnackbar(
-                        message = event.message
-                    )
-                }
-            }
-        }
+        listState.animateScrollToItem(state.messages.size)
+        viewModel.resetChatState()
     }
 
     Scaffold(scaffoldState = scaffoldState)

@@ -2,10 +2,16 @@ package com.thomaslam.chatgptclient.chatecompletion
 
 import com.thomaslam.chatgptclient.chatecompletion.data.repository.FakeChatCompletionRepository
 import com.thomaslam.chatgptclient.chatecompletion.domain.ChatCompletionUseCase
-import com.thomaslam.chatgptclient.chatecompletion.domain.entity.Message
+import com.thomaslam.chatgptclient.chatecompletion.domain.model.Message
 import com.thomaslam.chatgptclient.chatecompletion.domain.repository.ChatCompletionRepository
+import com.thomaslam.chatgptclient.chatecompletion.domain.util.Resource
 import com.thomaslam.chatgptclient.chatecompletion.util.MockDataCollections
+import junit.framework.TestCase.assertNotNull
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito
@@ -29,9 +35,18 @@ class ChatCompletionUseCaseTest {
         val messages = listOf(
             MockDataCollections.userMessage1
         )
-        runBlocking {
+        runTest {
+
             val chatId = 1L
-            val assistantMessage = usecase.createCompletion(chatId,  messages)
+            val values = mutableListOf<Resource<Message>>()
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                usecase.createCompletion(chatId,  messages).toList(values)
+            }
+            val loading = values[0]
+            assert(loading is Resource.Loading)
+
+            val success = values[1]
+            assert(success is Resource.Success)
             val createParameterCaptor = argumentCaptor<List<Message>>()
 
             val saveLocalFirstParameterCaptor = argumentCaptor<Long>()
@@ -40,6 +55,10 @@ class ChatCompletionUseCaseTest {
             verify(repository, times(1)).saveLocalMessage(saveLocalFirstParameterCaptor.capture(), saveLocalSecondParameterCaptor.capture())
             assert(createParameterCaptor.lastValue === messages)
             assert(saveLocalFirstParameterCaptor.lastValue === chatId)
+
+
+            val assistantMessage = success.data
+            assertNotNull(assistantMessage)
             assert(saveLocalSecondParameterCaptor.lastValue === assistantMessage)
         }
     }

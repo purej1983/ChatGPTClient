@@ -6,12 +6,14 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.thomaslam.chatgptclient.chatecompletion.domain.ChatCompletionUseCase
-import com.thomaslam.chatgptclient.chatecompletion.domain.entity.Message
+import com.thomaslam.chatgptclient.chatecompletion.domain.model.Message
+import com.thomaslam.chatgptclient.chatecompletion.domain.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -26,14 +28,20 @@ class ConversationViewModel @Inject constructor(
     private val _state = mutableStateOf(ConversationScreenUIState())
     val state: State<ConversationScreenUIState> = _state
     private var currentChatId: Long = -1
-    private val _eventFlow = MutableSharedFlow<UiEvent>()
-    val eventFlow = _eventFlow.asSharedFlow()
-
 
     init {
         savedStateHandle.get<Long>("chatId")?.let { chatId ->
             currentChatId = chatId
             getConversation(chatId)
+            viewModelScope.launch {
+                chatCompletionUseCase.resetChatState(chatId)
+            }
+        }
+    }
+
+    fun resetChatState(){
+        viewModelScope.launch {
+            chatCompletionUseCase.resetChatState(currentChatId)
         }
     }
 
@@ -51,14 +59,14 @@ class ConversationViewModel @Inject constructor(
         val messages = _state.value.messages + newUserMessage
         appendMessage(newUserMessage)
         scope.launch {
-            try {
-                setLoading(true)
-                chatCompletionUseCase.createCompletion(currentChatId, messages)
-            } catch (e: Exception) {
-                _eventFlow.emit(UiEvent.ShowSnackBar("Error occurred! Please try again later"))
-            } finally {
-                setLoading(false)
+
+            chatCompletionUseCase.createCompletion(currentChatId, messages).collectLatest {
+                when(it) {
+                    is Resource.Loading -> { setLoading((true))}
+                    else -> { setLoading(false) }
+                }
             }
+
         }
     }
 
@@ -77,8 +85,5 @@ class ConversationViewModel @Inject constructor(
             chatCompletionUseCase.updateLastUserMessage(currentChatId, message.content)
             chatCompletionUseCase.saveMessage(currentChatId, message)
         }
-    }
-    sealed class UiEvent {
-        data class ShowSnackBar(val message: String): UiEvent()
     }
 }
