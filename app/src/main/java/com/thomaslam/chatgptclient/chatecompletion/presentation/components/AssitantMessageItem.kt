@@ -13,8 +13,6 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import com.thomaslam.chatgptclient.R
 import com.thomaslam.chatgptclient.ui.theme.ChatGPTClientTheme
 import com.thomaslam.chatgptclient.ui.theme.assistantBackground
+import com.thomaslam.chatgptclient.ui.theme.textColor
 
 @Composable
 fun AssitantMessageItem(
@@ -54,7 +53,7 @@ fun AssitantMessageItem(
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(
                     text = content,
-                    color = Color.White,
+                    color = MaterialTheme.colors.textColor,
                     style = MaterialTheme.typography.body1,
                     modifier = Modifier.weight(1f),
                 )

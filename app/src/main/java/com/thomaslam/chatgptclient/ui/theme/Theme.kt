@@ -6,8 +6,6 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
 private val DarkColorPalette = darkColors(
@@ -53,6 +51,18 @@ fun ChatGPTClientTheme(
 }
 
 val Colors.userBackground: Color
-    get() = if (isLight) Resolver else Color.White
+    get() = if (isLight) Color.White else Resolver
 val Colors.assistantBackground: Color
-    get() = if (isLight) GunPowder else WhiteLilac
+    get() = if (isLight) WhiteLilac else GunPowder
+
+val Colors.textColor: Color
+    get() = if (isLight) Color.Black else Color.White
+
+val Colors.iconTintColor: Color
+    get() = if (isLight) Color.Black else Color.White
+
+val Colors.textFieldBackground: Color
+    get() = if (isLight) Color.White else PaynesGray
+
+val Colors.separatorColor: Color
+    get() = if (isLight) Color.Black else Color.White

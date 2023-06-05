@@ -11,3 +11,5 @@ val GunPowder = Color(0xFF444654)
 val Resolver = Color(0xFF343441)
 
 val WhiteLilac = Color(0xFFF7F7F8)
+
+val PaynesGray = Color(0xFF40414F)

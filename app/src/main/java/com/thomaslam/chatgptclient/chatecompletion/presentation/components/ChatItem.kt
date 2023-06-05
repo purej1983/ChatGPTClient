@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -16,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Chat
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.ChatState
 import com.thomaslam.chatgptclient.ui.theme.ChatGPTClientTheme
+import com.thomaslam.chatgptclient.ui.theme.textColor
 
 @Composable
 fun ChatItem(item: Chat, onClick: () -> Unit) {
@@ -28,7 +30,7 @@ fun ChatItem(item: Chat, onClick: () -> Unit) {
             modifier = Modifier
                 .clickable { onClick() }
                 .weight(1f),
-            color = Color.White
+            color = MaterialTheme.colors.textColor
         )
         when(item.state) {
             ChatState.LOADING -> {

@@ -1,6 +1,5 @@
 package com.thomaslam.chatgptclient.chatecompletion.presentation
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,6 +10,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Divider
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.rememberScaffoldState
@@ -28,8 +28,8 @@ import com.thomaslam.chatgptclient.chatecompletion.presentation.components.Messa
 import com.thomaslam.chatgptclient.chatecompletion.presentation.components.UserMessageItem
 import com.thomaslam.chatgptclient.ui.theme.ChatGPTClientTheme
 import com.thomaslam.chatgptclient.ui.theme.assistantBackground
+import com.thomaslam.chatgptclient.ui.theme.separatorColor
 import com.thomaslam.chatgptclient.ui.theme.userBackground
-import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun Conversationscreen(
@@ -47,7 +47,7 @@ fun Conversationscreen(
     }
 
     Scaffold(scaffoldState = scaffoldState)
-    {
+    { it ->
         Column(
             modifier  = Modifier
                 .fillMaxHeight()
@@ -73,6 +73,10 @@ fun Conversationscreen(
                             backgroundColor = MaterialTheme.colors.assistantBackground
                         )
                     }
+                    Divider(
+                        modifier = Modifier.padding(8.dp),
+                        color = MaterialTheme.colors.separatorColor
+                    )
                 }
             }
             if(state.isLoading) {
@@ -85,8 +89,8 @@ fun Conversationscreen(
             MessageSendBar(
                 modifier = Modifier
                     .background(MaterialTheme.colors.userBackground),
-                onMessageButtonClick = {
-                    viewModel.send(it)
+                onMessageButtonClick = { content ->
+                    viewModel.send(content)
                 }
             )
         }
