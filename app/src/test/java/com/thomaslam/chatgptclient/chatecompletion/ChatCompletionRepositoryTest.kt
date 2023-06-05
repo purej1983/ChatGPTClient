@@ -1,6 +1,5 @@
 package com.thomaslam.chatgptclient.chatecompletion
 
-import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.ChatGptDao
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.FakeChatGptDao
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.FakeChatCompletionService
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.ChatCompletionService
@@ -31,7 +30,7 @@ import java.io.IOException
 
 class ChatCompletionRepositoryTest {
     private lateinit var repository: ChatCompletionRepository
-    private lateinit var dao: ChatGptDao
+    private lateinit var dao: FakeChatGptDao
     private lateinit var api: ChatCompletionService
 
     @Before
@@ -49,7 +48,7 @@ class ChatCompletionRepositoryTest {
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
                 repository.getChats().toList(values)
             }
-            (dao as FakeChatGptDao).emitChatChange()
+            dao.emitChatChange()
             val actual = values[0]
             assertEquals(FakeChatGptDao.mockChats.size, actual.size)
             assert(actual.size == FakeChatGptDao.mockChats.size)
@@ -72,7 +71,7 @@ class ChatCompletionRepositoryTest {
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
                 repository.getChats().toList(values)
             }
-            (dao as FakeChatGptDao).emitChatChange()
+            dao.emitChatChange()
             val beforeInsert = values[0]
             assert(beforeInsert.size == 2)
             val newId = repository.newChat()
@@ -113,7 +112,7 @@ class ChatCompletionRepositoryTest {
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
                 repository.getConversation(1L).toList(values)
             }
-            (dao as FakeChatGptDao).emitConversationChange()
+            dao.emitConversationChange()
             val actual = values[0]
             assert(actual.size == FakeChatGptDao.mockConversations.size)
             actual.forEachIndexed {
@@ -139,7 +138,7 @@ class ChatCompletionRepositoryTest {
 
             val role = "user"
             val content = "How's attraction in Birmingham"
-            (dao as FakeChatGptDao).emitConversationChange()
+            dao.emitConversationChange()
             val beforeInsert = values[0]
             assert(beforeInsert.size == 2)
             repository.saveLocalMessage(id, Message(role, content))
