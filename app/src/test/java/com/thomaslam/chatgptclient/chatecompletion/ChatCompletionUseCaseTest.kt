@@ -5,7 +5,6 @@ import com.thomaslam.chatgptclient.chatecompletion.domain.ChatCompletionUseCase
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Chat
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.ChatState
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Message
-import com.thomaslam.chatgptclient.chatecompletion.domain.repository.ChatCompletionRepository
 import com.thomaslam.chatgptclient.chatecompletion.domain.util.Resource
 import com.thomaslam.chatgptclient.chatecompletion.util.MockDataCollections
 import io.mockk.Runs
@@ -28,7 +27,7 @@ import org.mockito.Mockito.verify
 import org.mockito.kotlin.argumentCaptor
 
 class ChatCompletionUseCaseTest {
-    private lateinit var repository: ChatCompletionRepository
+    private lateinit var repository: FakeChatCompletionRepository
     private lateinit var usecase: ChatCompletionUseCase
 
     @Before
@@ -44,7 +43,7 @@ class ChatCompletionUseCaseTest {
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             usecase.getChats().toList(values)
         }
-        (repository as FakeChatCompletionRepository).emitChatChange()
+        repository.emitChatChange()
         val beforeInsert = values[0]
         assertEquals(2, beforeInsert.size)
         val newId = usecase.newChat()
@@ -60,7 +59,7 @@ class ChatCompletionUseCaseTest {
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             usecase.getChats().toList(values)
         }
-        (repository as FakeChatCompletionRepository).emitChatChange()
+        repository.emitChatChange()
         val chatId = 2L
         val beforeUpdateChatList = values[0]
         val testItemBeforeUpdate = beforeUpdateChatList.first { it.id == 2L}
@@ -81,7 +80,7 @@ class ChatCompletionUseCaseTest {
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             usecase.getChats().toList(values)
         }
-        (repository as FakeChatCompletionRepository).emitChatChange()
+        repository.emitChatChange()
         val chatId = 2L
         val beforeUpdateChatList = values[0]
         val testItemBeforeUpdate = beforeUpdateChatList.first { it.id == 2L}
@@ -167,7 +166,7 @@ class ChatCompletionUseCaseTest {
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             usecase.getConversation(chatId).toList(values)
         }
-        (repository as FakeChatCompletionRepository).emitMessageChange()
+        repository.emitMessageChange()
         val messageList = values[0]
         assertEquals(2, messageList.size)
         assertEquals(MockDataCollections.userMessage1, messageList[0])
