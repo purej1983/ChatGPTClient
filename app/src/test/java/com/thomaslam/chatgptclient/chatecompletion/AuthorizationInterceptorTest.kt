@@ -1,7 +1,7 @@
 package com.thomaslam.chatgptclient.chatecompletion
 
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.interceptor.AuthorizationInterceptor
-import com.thomaslam.chatgptclient.chatecompletion.util.MyAppConfig
+import com.thomaslam.chatgptclient.chatecompletion.util.ChatGptConfigurationProvider
 import io.mockk.every
 import io.mockk.mockkObject
 import junit.framework.TestCase.assertEquals
@@ -17,21 +17,21 @@ import org.junit.Test
 
 class AuthorizationInterceptorTest {
     private lateinit var mockServer: MockWebServer
-    private lateinit var myAppConfig: MyAppConfig
+    private lateinit var chatGptConfigurationProvider: ChatGptConfigurationProvider
 
     @Before
     fun setup(){
         mockServer = MockWebServer()
         mockServer.start()
-        myAppConfig = MyAppConfig()
-        mockkObject(myAppConfig)
-        every { myAppConfig.getChatGptApiKey() } returns "TestingApiKey"
+        chatGptConfigurationProvider = ChatGptConfigurationProvider()
+        mockkObject(chatGptConfigurationProvider)
+        every { chatGptConfigurationProvider.chatGptApiKey } returns "TestingApiKey"
     }
 
     @Test
     fun authorizationInterceptorTest() {
 
-        val interceptor = AuthorizationInterceptor(myAppConfig)
+        val interceptor = AuthorizationInterceptor(chatGptConfigurationProvider)
         val client = OkHttpClient.Builder()
             .addInterceptor(interceptor)
             .build()

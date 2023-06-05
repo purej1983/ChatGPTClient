@@ -8,7 +8,7 @@ import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.interc
 import com.thomaslam.chatgptclient.chatecompletion.data.repository.ChatCompletionRepositoryImpl
 import com.thomaslam.chatgptclient.chatecompletion.domain.ChatCompletionUseCase
 import com.thomaslam.chatgptclient.chatecompletion.domain.repository.ChatCompletionRepository
-import com.thomaslam.chatgptclient.chatecompletion.util.MyAppConfig
+import com.thomaslam.chatgptclient.chatecompletion.util.ChatGptConfigurationProvider
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -32,7 +32,7 @@ class AppModule {
 
     @Singleton
     @Provides
-    fun provideAuthorizationInterceptor(myAppConfig: MyAppConfig): AuthorizationInterceptor = AuthorizationInterceptor(myAppConfig)
+    fun provideAuthorizationInterceptor(chatGptConfigurationProvider: ChatGptConfigurationProvider): AuthorizationInterceptor = AuthorizationInterceptor(chatGptConfigurationProvider)
     @Singleton
     @Provides
     fun providesOkHttpClient(httpLoggingInterceptor: HttpLoggingInterceptor, authorizationInterceptor: AuthorizationInterceptor): OkHttpClient =
@@ -81,7 +81,7 @@ class AppModule {
 
     @Provides
     @Singleton
-    fun provideMyAppConfig(): MyAppConfig {
-        return MyAppConfig()
+    fun provideMyAppConfig(): ChatGptConfigurationProvider {
+        return ChatGptConfigurationProvider()
     }
 }
