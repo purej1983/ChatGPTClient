@@ -15,18 +15,16 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.thomaslam.chatgptclient.R
 import com.thomaslam.chatgptclient.ui.theme.ChatGPTClientTheme
-import com.thomaslam.chatgptclient.ui.theme.assistantBackground
+import com.thomaslam.chatgptclient.ui.theme.iconTintColor
+import com.thomaslam.chatgptclient.ui.theme.textColor
 import com.thomaslam.chatgptclient.ui.theme.userBackground
 
 @Composable
@@ -50,14 +48,14 @@ fun UserMessageItem(
                     Icon(
                         imageVector = Icons.Default.Person,
                         contentDescription = null,
-                        tint= Color.White,
+                        tint= MaterialTheme.colors.iconTintColor,
                         modifier = Modifier.size(41.dp)
                     )
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(
                     text = content,
-                    color = Color.White,
+                    color = MaterialTheme.colors.textColor,
                     style = MaterialTheme.typography.body1,
                     modifier = Modifier.weight(1f),
                 )
