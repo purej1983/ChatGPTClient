@@ -12,7 +12,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.thomaslam.chatgptclient.chatecompletion.presentation.ChatScreen
-import com.thomaslam.chatgptclient.chatecompletion.presentation.ChatViewModel
+import com.thomaslam.chatgptclient.chatecompletion.presentation.ConfigScreen
 import com.thomaslam.chatgptclient.chatecompletion.presentation.Conversationscreen
 import com.thomaslam.chatgptclient.chatecompletion.presentation.NavigationViewModel
 import com.thomaslam.chatgptclient.chatecompletion.presentation.util.Screen
@@ -55,6 +55,9 @@ fun CustomNavigation(
                 )
             ) {
                 Conversationscreen()
+            }
+            composable(route = Screen.ConfigScreen.route) {
+                ConfigScreen()
             }
         }
     }
