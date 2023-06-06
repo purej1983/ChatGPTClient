@@ -1,6 +1,7 @@
 package com.thomaslam.chatgptclient.chatecompletion.data.datasource.local
 
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ChatEntity
+import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ChatGptConfigEntity
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ConversationEntity
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.ChatState
 import com.thomaslam.chatgptclient.chatecompletion.util.MockDataCollections
@@ -10,12 +11,15 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 class FakeChatGptDao: ChatGptDao {
     private val chatFlow = MutableSharedFlow<List<ChatEntity>>()
     private val conversationFlow = MutableSharedFlow<List<ConversationEntity>>()
+    private val configFlow = MutableSharedFlow<ChatGptConfigEntity>()
     private var chatAutoId: Long = 2
     private var conversationAutoId: Long = 2
 
     private val conversations = mockConversations
 
     private val chats = mockChats
+
+    private var config = mockConfig
     override suspend fun insertChat(chat: ChatEntity): Long {
         chats.add(
             ChatEntity(
@@ -37,6 +41,15 @@ class FakeChatGptDao: ChatGptDao {
             )
         )
         emitConversationChange()
+    }
+
+    override fun getConfig(): Flow<ChatGptConfigEntity> {
+        return configFlow
+    }
+
+    override suspend fun saveConfig(config: ChatGptConfigEntity) {
+        this.config = config
+        emitConfigChange()
     }
 
     override suspend fun updateLastUserMessage(chatId: Long, lastUserMessage: String) {
@@ -73,6 +86,10 @@ class FakeChatGptDao: ChatGptDao {
         conversationFlow.emit(conversations)
     }
 
+    suspend fun emitConfigChange() {
+        configFlow.emit(config)
+    }
+
     companion object {
         val mockChats = mutableListOf(
             ChatEntity(lastUserMessage = "testMessage1", id = 1),
@@ -92,6 +109,14 @@ class FakeChatGptDao: ChatGptDao {
                 content = MockDataCollections.assistantMessage1.content,
                 chatId = 1
             )
+        )
+
+        val mockConfig = ChatGptConfigEntity(
+            id = 1,
+            n = 2,
+            temperature = 0.8f,
+            stream = true,
+            max_tokens = 120
         )
     }
 }

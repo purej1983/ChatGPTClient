@@ -9,8 +9,10 @@ import com.thomaslam.chatgptclient.chatecompletion.domain.model.ChatState
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Message
 import com.thomaslam.chatgptclient.chatecompletion.domain.repository.ChatCompletionRepository
 import com.thomaslam.chatgptclient.chatecompletion.domain.util.Resource
+import com.thomaslam.chatgptclient.chatecompletion.util.ConfigurationProvider
 import com.thomaslam.chatgptclient.chatecompletion.util.MockDataCollections
 import io.mockk.coEvery
+import io.mockk.mockk
 import io.mockk.mockkObject
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
@@ -32,12 +34,14 @@ class ChatCompletionRepositoryTest {
     private lateinit var repository: ChatCompletionRepository
     private lateinit var dao: FakeChatGptDao
     private lateinit var api: ChatCompletionService
+    private lateinit var configProvider: ConfigurationProvider
 
     @Before
     fun setup() {
+        configProvider = mockk(relaxed = true)
         dao = FakeChatGptDao()
         api = FakeChatCompletionService()
-        repository = ChatCompletionRepositoryImpl(dao, api)
+        repository = ChatCompletionRepositoryImpl(dao, api, configProvider)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)

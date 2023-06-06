@@ -7,7 +7,7 @@ import com.thomaslam.chatgptclient.chatecompletion.domain.model.Config
 @Entity(
     tableName = "Config",
 )
-data class ChatGptConfigEntity (
+data class ChatGptConfigEntity(
     @PrimaryKey
     val id: Short? = null,
     val n: Int = 1,
@@ -15,7 +15,6 @@ data class ChatGptConfigEntity (
     val stream: Boolean = false,
     val max_tokens: Int = 150
 ) {
-
     fun toConfig(): Config {
         return Config(
             n = n,

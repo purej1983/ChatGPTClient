@@ -1,8 +1,10 @@
 package com.thomaslam.chatgptclient.chatecompletion
 
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.interceptor.AuthorizationInterceptor
+import com.thomaslam.chatgptclient.chatecompletion.domain.use_case.ConfigUseCase
 import com.thomaslam.chatgptclient.chatecompletion.util.ChatGptConfigurationProvider
 import io.mockk.every
+import io.mockk.mockk
 import io.mockk.mockkObject
 import junit.framework.TestCase.assertEquals
 import okhttp3.OkHttpClient
@@ -18,12 +20,14 @@ import org.junit.Test
 class AuthorizationInterceptorTest {
     private lateinit var mockServer: MockWebServer
     private lateinit var chatGptConfigurationProvider: ChatGptConfigurationProvider
+    private lateinit var usecase: ConfigUseCase
 
     @Before
     fun setup(){
         mockServer = MockWebServer()
         mockServer.start()
-        chatGptConfigurationProvider = ChatGptConfigurationProvider()
+        usecase = mockk(relaxed = true)
+        chatGptConfigurationProvider = ChatGptConfigurationProvider(usecase)
         mockkObject(chatGptConfigurationProvider)
         every { chatGptConfigurationProvider.chatGptApiKey } returns "TestingApiKey"
     }
