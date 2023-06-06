@@ -55,7 +55,7 @@ class MigrationTest {
         helper.runMigrationsAndValidate(DB_NAME, 4, true, ChatGPTDatabase.migration3To4).query("SELECT * FROM Config limit 1").apply {
             assertThat(moveToFirst()).isTrue()
             assertThat(getInt(getColumnIndex("n"))).isEqualTo(1)
-            assertThat(getFloat(getColumnIndex("temperature"))).isEqualTo(1)
+            assertThat(getInt(getColumnIndex("temperature"))).isEqualTo(1)
             assertThat(getInt(getColumnIndex("stream"))).isEqualTo(0)
             assertThat(getInt(getColumnIndex("max_tokens"))).isEqualTo(150)
         }
@@ -66,7 +66,13 @@ class MigrationTest {
         helper.createDatabase(DB_NAME, 4).apply {
             close()
         }
-        helper.runMigrationsAndValidate(DB_NAME, 5, true)
+        helper.runMigrationsAndValidate(DB_NAME, 5, true).query("SELECT * FROM Config limit 1").apply {
+            assertThat(moveToFirst()).isTrue()
+            assertThat(getInt(getColumnIndex("n"))).isEqualTo(1)
+            assertThat(getFloat(getColumnIndex("temperature"))).isEqualTo(1.0f)
+            assertThat(getInt(getColumnIndex("stream"))).isEqualTo(0)
+            assertThat(getInt(getColumnIndex("max_tokens"))).isEqualTo(150)
+        }
 
     }
 
