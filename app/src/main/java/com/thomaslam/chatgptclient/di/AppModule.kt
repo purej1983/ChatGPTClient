@@ -72,11 +72,14 @@ class AppModule {
     @Provides
     @Singleton
     fun provideChatGPTDatabase(app: Application): ChatGPTDatabase {
-        return Room.databaseBuilder(
-            app,
-            ChatGPTDatabase::class.java,
-            ChatGPTDatabase.DATABASE_NAME
-        ).build()
+        return Room
+            .databaseBuilder(
+                app,
+                ChatGPTDatabase::class.java,
+                ChatGPTDatabase.DATABASE_NAME
+            )
+            .addMigrations(ChatGPTDatabase.migration3To4)
+            .build()
     }
 
     @Provides
