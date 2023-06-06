@@ -5,4 +5,5 @@ interface ConfigurationProvider {
     val temperature: Float
     val n: Int
     val stream: Boolean
+    val maxTokens: Int
 }
