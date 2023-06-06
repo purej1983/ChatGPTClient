@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ChatEntity
+import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ChatGptConfigEntity
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ConversationEntity
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.ChatState
 import kotlinx.coroutines.flow.Flow
@@ -16,6 +17,12 @@ interface ChatGptDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertConversation(conversation: ConversationEntity)
+
+    @Query("Select * from Config limit 1")
+    fun getConfig(): Flow<ChatGptConfigEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun saveConfig(config: ChatGptConfigEntity)
 
     @Query("UPDATE Chat SET lastUserMessage =:lastUserMessage where id=:chatId")
     suspend fun updateLastUserMessage(chatId: Long, lastUserMessage: String)
