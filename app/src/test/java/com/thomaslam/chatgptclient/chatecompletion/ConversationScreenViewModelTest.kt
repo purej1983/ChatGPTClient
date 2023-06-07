@@ -7,7 +7,7 @@ import com.thomaslam.chatgptclient.chatecompletion.presentation.ConversationView
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.mockk
-import junit.framework.TestCase
+import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -46,7 +46,7 @@ class ConversationScreenViewModelTest {
         viewModel.send(content)
         flow.emit(listOf(Message(content = content)))
         scheduler.advanceUntilIdle()
-        TestCase.assertEquals(viewModel.state.value.messages, listOf(Message(content = content)))
+        assertEquals(viewModel.state.value.messages, listOf(Message(content = content)))
     }
 
 

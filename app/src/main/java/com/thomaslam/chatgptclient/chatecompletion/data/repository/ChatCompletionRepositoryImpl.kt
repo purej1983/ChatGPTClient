@@ -10,6 +10,7 @@ import com.thomaslam.chatgptclient.chatecompletion.domain.model.ChatState
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Message
 import com.thomaslam.chatgptclient.chatecompletion.domain.repository.ChatCompletionRepository
 import com.thomaslam.chatgptclient.chatecompletion.domain.util.Resource
+import com.thomaslam.chatgptclient.chatecompletion.util.ConfigurationProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import retrofit2.HttpException
@@ -17,7 +18,8 @@ import java.io.IOException
 
 class ChatCompletionRepositoryImpl (
     private val chatGptDao: ChatGptDao,
-    private val chatCompletionService: ChatCompletionService
+    private val chatCompletionService: ChatCompletionService,
+    private val configurationProvider: ConfigurationProvider
 ) : ChatCompletionRepository {
     override fun getChats(): Flow<List<Chat>> {
         return flow {

@@ -6,9 +6,15 @@ import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.ChatGPT
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.ChatCompletionService
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.interceptor.AuthorizationInterceptor
 import com.thomaslam.chatgptclient.chatecompletion.data.repository.ChatCompletionRepositoryImpl
+import com.thomaslam.chatgptclient.chatecompletion.data.repository.ChatGptConfigRepositoryImpl
 import com.thomaslam.chatgptclient.chatecompletion.domain.ChatCompletionUseCase
 import com.thomaslam.chatgptclient.chatecompletion.domain.repository.ChatCompletionRepository
-import com.thomaslam.chatgptclient.chatecompletion.util.MyAppConfig
+import com.thomaslam.chatgptclient.chatecompletion.domain.repository.ChatGptConfigRepository
+import com.thomaslam.chatgptclient.chatecompletion.domain.use_case.ConfigUseCase
+import com.thomaslam.chatgptclient.chatecompletion.domain.use_case.GetConfig
+import com.thomaslam.chatgptclient.chatecompletion.domain.use_case.SaveConfig
+import com.thomaslam.chatgptclient.chatecompletion.util.ChatGptConfigurationProvider
+import com.thomaslam.chatgptclient.chatecompletion.util.ConfigurationProvider
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -32,7 +38,7 @@ class AppModule {
 
     @Singleton
     @Provides
-    fun provideAuthorizationInterceptor(myAppConfig: MyAppConfig): AuthorizationInterceptor = AuthorizationInterceptor(myAppConfig)
+    fun provideAuthorizationInterceptor(chatGptConfigurationProvider: ChatGptConfigurationProvider): AuthorizationInterceptor = AuthorizationInterceptor(chatGptConfigurationProvider)
     @Singleton
     @Provides
     fun providesOkHttpClient(httpLoggingInterceptor: HttpLoggingInterceptor, authorizationInterceptor: AuthorizationInterceptor): OkHttpClient =
@@ -59,8 +65,8 @@ class AppModule {
 
     @Singleton
     @Provides
-    fun provideChatCompletionRepository(db: ChatGPTDatabase, chatCompletionService: ChatCompletionService): ChatCompletionRepository {
-        return ChatCompletionRepositoryImpl(db.dao, chatCompletionService)
+    fun provideChatCompletionRepository(db: ChatGPTDatabase, chatCompletionService: ChatCompletionService, configProvider: ConfigurationProvider): ChatCompletionRepository {
+        return ChatCompletionRepositoryImpl(db.dao, chatCompletionService, configProvider)
     }
 
     @Singleton
@@ -69,19 +75,37 @@ class AppModule {
         return ChatCompletionUseCase(chatCompletionRepository)
     }
 
-    @Provides
     @Singleton
-    fun provideChatGPTDatabase(app: Application): ChatGPTDatabase {
-        return Room.databaseBuilder(
-            app,
-            ChatGPTDatabase::class.java,
-            ChatGPTDatabase.DATABASE_NAME
-        ).build()
+    @Provides
+    fun provideChatGptConfigRepository(db: ChatGPTDatabase): ChatGptConfigRepository {
+        return ChatGptConfigRepositoryImpl(db.dao)
+    }
+
+    @Singleton
+    @Provides
+    fun provideConfigUseCase(repository: ChatGptConfigRepository): ConfigUseCase {
+        return ConfigUseCase(
+            getConfig = GetConfig(repository = repository),
+            saveConfig = SaveConfig(repository = repository)
+        )
     }
 
     @Provides
     @Singleton
-    fun provideMyAppConfig(): MyAppConfig {
-        return MyAppConfig()
+    fun provideChatGPTDatabase(app: Application): ChatGPTDatabase {
+        return Room
+            .databaseBuilder(
+                app,
+                ChatGPTDatabase::class.java,
+                ChatGPTDatabase.DATABASE_NAME
+            )
+            .addMigrations(ChatGPTDatabase.migration3To4)
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideMyAppConfig(useCase: ConfigUseCase): ConfigurationProvider {
+        return ChatGptConfigurationProvider(useCase)
     }
 }

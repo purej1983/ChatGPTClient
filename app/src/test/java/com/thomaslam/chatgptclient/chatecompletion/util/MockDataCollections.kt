@@ -5,6 +5,7 @@ import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.dto.Ch
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.dto.Usage
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Chat
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.ChatState
+import com.thomaslam.chatgptclient.chatecompletion.domain.model.Config
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Message
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Model
 
@@ -48,6 +49,13 @@ class MockDataCollections {
         val chats = listOf(
             Chat(lastUserMessage = "Top 5 attractions in Birmingham", id = 1),
             Chat(lastUserMessage = "New Chat", id = 2, state = ChatState.NEW_MESSAGE),
+        )
+
+        val config = Config(
+            n = 2,
+            temperature = 0.8f,
+            stream = true,
+            max_tokens = 120
         )
     }
 }
