@@ -17,7 +17,6 @@ class ConfigScreenViewModel@Inject constructor(
 ): ViewModel(){
     private val _state = mutableStateOf(ConfigScreenUIState())
     val state: State<ConfigScreenUIState> = _state
-    private var _n = 0
     init {
         getConfig()
     }
@@ -25,7 +24,6 @@ class ConfigScreenViewModel@Inject constructor(
     private fun getConfig() {
         viewModelScope.launch {
             useCase.getConfig().collectLatest {
-                _n = it.n
                 _state.value = state.value.copy(
                     config = it
                 )
