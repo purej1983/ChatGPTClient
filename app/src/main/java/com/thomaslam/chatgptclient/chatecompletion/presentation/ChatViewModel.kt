@@ -37,6 +37,7 @@ class ChatViewModel @Inject constructor(
             }
             .launchIn(viewModelScope)
     }
+
     fun newChat() {
         viewModelScope.launch {
             val id = chatCompletionUseCase.newChat()

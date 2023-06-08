@@ -16,7 +16,7 @@ interface ChatGptDao {
     suspend fun insertChat(chat: ChatEntity): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertConversation(conversation: ConversationEntity)
+    suspend fun insertConversation(conversation: ConversationEntity): Long
 
     @Query("Select * from Config limit 1")
     fun getConfig(): Flow<ChatGptConfigEntity>

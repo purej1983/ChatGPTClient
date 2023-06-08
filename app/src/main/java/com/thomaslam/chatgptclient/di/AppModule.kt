@@ -65,14 +65,14 @@ class AppModule {
 
     @Singleton
     @Provides
-    fun provideChatCompletionRepository(db: ChatGPTDatabase, chatCompletionService: ChatCompletionService, configProvider: ConfigurationProvider): ChatCompletionRepository {
-        return ChatCompletionRepositoryImpl(db.dao, chatCompletionService, configProvider)
+    fun provideChatCompletionRepository(db: ChatGPTDatabase, chatCompletionService: ChatCompletionService): ChatCompletionRepository {
+        return ChatCompletionRepositoryImpl(db.dao, chatCompletionService)
     }
 
     @Singleton
     @Provides
-    fun provideChatCompletionUseCase(chatCompletionRepository: ChatCompletionRepository): ChatCompletionUseCase {
-        return ChatCompletionUseCase(chatCompletionRepository)
+    fun provideChatCompletionUseCase(chatCompletionRepository: ChatCompletionRepository, configProvider: ConfigurationProvider): ChatCompletionUseCase {
+        return ChatCompletionUseCase(chatCompletionRepository, configProvider)
     }
 
     @Singleton

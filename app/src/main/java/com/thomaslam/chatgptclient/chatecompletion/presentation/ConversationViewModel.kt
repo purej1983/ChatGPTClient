@@ -58,13 +58,12 @@ class ConversationViewModel @Inject constructor(
         appendMessage(newUserMessage)
         scope.launch {
 
-            chatCompletionUseCase.createCompletion(currentChatId, messages).collectLatest {
+            chatCompletionUseCase.createChatCompletion(currentChatId, messages).collectLatest {
                 when(it) {
                     is Resource.Loading -> { setLoading((true))}
                     else -> { setLoading(false) }
                 }
             }
-
         }
     }
 
