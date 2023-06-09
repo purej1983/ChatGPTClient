@@ -1,5 +1,6 @@
 package com.thomaslam.chatgptclient.chatecompletion.data.repository
 
+import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.dto.ChatCompletionChunk
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Chat
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.ChatState
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Message
@@ -52,16 +53,24 @@ class FakeChatCompletionRepository: ChatCompletionRepository {
         emitChatChange()
     }
 
-    override suspend fun saveLocalMessage(chatId: Long, message: Message) {
-
+    override suspend fun saveLocalMessage(
+        chatId: Long,
+        message: Message,
+        conversationId: Long?
+    ): Long {
+        return 1
     }
 
-    override suspend fun create(messages: List<Message>): Resource<Message> {
+    override suspend fun createChatCompletion(messages: List<Message>): Resource<Message> {
         return Resource.Success(MockDataCollections.assistantMessage1)
     }
 
     override fun getConversation(id: Long): Flow<List<Message>> {
         return messageFlow
+    }
+
+    override fun streamChatCompletion(messages: List<Message>): Flow<ChatCompletionChunk> {
+        TODO("Not yet implemented")
     }
 
     @VisibleForTesting

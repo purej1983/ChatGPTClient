@@ -1,6 +1,5 @@
 package com.thomaslam.chatgptclient.chatecompletion.data.repository
 
-import android.util.Log
 import com.google.gson.Gson
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.ChatGptDao
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ChatEntity
@@ -98,7 +97,7 @@ class ChatCompletionRepositoryImpl (
     }
 
     override fun streamChatCompletion(messages: List<Message>): Flow<ChatCompletionChunk> {
-        val call = chatCompletionService.createStreamChatCompletion(
+        val call:Call<ResponseBody> = chatCompletionService.createStreamChatCompletion(
             ChatCompletionRequest(
                 messages = messages,
                 stream = true
@@ -127,7 +126,6 @@ class ChatCompletionRepositoryImpl (
                     var line: String? = reader.readLine()
                     var sse: SSE? = null
                     while(line != null) {
-                        Log.d("streamSSE","line: $line")
                         if (line.startsWith("data:")) {
                             val data: String = line.substring(5).trim()
                             sse = SSE(data)
@@ -135,8 +133,8 @@ class ChatCompletionRepositoryImpl (
                             if (sse.isDone()) {
                                 break
                             }
-                            val result = trySend(sse)
-                            Log.d("streamSSE","result: $result")
+                            trySend(sse)
+
                             sse = null
                         } else {
 
@@ -147,7 +145,7 @@ class ChatCompletionRepositoryImpl (
                 }
 
                 override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                    TODO("Not yet implemented")
+
                 }
 
             })

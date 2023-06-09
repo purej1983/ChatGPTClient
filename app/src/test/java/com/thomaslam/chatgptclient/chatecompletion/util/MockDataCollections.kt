@@ -45,6 +45,18 @@ class MockDataCollections {
                 )
             )
         )
+        
+        val mockChunk1 =
+        "data: {\"id\":\"chatcmpl-7PCtAHaH7ty0Qw2fZbmX77Z3DxRjf\",\"object\":\"chat.completion.chunk\",\"created\":1686242100,\"model\":\"gpt-3.5-turbo-0301\",\"choices\":[{\"delta\":{\"role\":\"assistant\"},\"index\":0,\"finish_reason\":null}]}\n\n"
+        val mockChunk2 =
+        "data: {\"id\":\"chatcmpl-7PCtAHaH7ty0Qw2fZbmX77Z3DxRjf\",\"object\":\"chat.completion.chunk\",\"created\":1686242100,\"model\":\"gpt-3.5-turbo-0301\",\"choices\":[{\"delta\":{\"content\":\"Sure\"},\"index\":0,\"finish_reason\":null}]}\n" +
+                "\n"
+        val mockChunk3 =
+        "data: {\"id\":\"chatcmpl-7PCtAHaH7ty0Qw2fZbmX77Z3DxRjf\",\"object\":\"chat.completion.chunk\",\"created\":1686242100,\"model\":\"gpt-3.5-turbo-0301\",\"choices\":[{\"delta\":{\"content\":\"!\"},\"index\":0,\"finish_reason\":null}]}\n" +
+                "\n"
+        val mockChunk4 =
+        "data: {\"id\":\"chatcmpl-7PCtAHaH7ty0Qw2fZbmX77Z3DxRjf\",\"object\":\"chat.completion.chunk\",\"created\":1686242100,\"model\":\"gpt-3.5-turbo-0301\",\"choices\":[{\"delta\":{\"content\":\" Here\"},\"index\":0,\"finish_reason\":null}]}\n" +
+                "\n"
 
         val chats = listOf(
             Chat(lastUserMessage = "Top 5 attractions in Birmingham", id = 1),

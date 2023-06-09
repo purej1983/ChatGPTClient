@@ -6,10 +6,9 @@ import com.thomaslam.chatgptclient.chatecompletion.domain.model.Chat
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.ChatState
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Message
 import com.thomaslam.chatgptclient.chatecompletion.domain.util.Resource
+import com.thomaslam.chatgptclient.chatecompletion.util.FakeConfigurationProvider
 import com.thomaslam.chatgptclient.chatecompletion.util.MockDataCollections
-import io.mockk.Runs
 import io.mockk.coEvery
-import io.mockk.just
 import io.mockk.mockkObject
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
@@ -26,17 +25,19 @@ import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.argumentCaptor
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class ChatCompletionUseCaseTest {
     private lateinit var repository: FakeChatCompletionRepository
     private lateinit var usecase: ChatCompletionUseCase
+    private lateinit var configurationProvider: FakeConfigurationProvider
 
     @Before
     fun setup() {
         repository = Mockito.spy(FakeChatCompletionRepository())
-        usecase = ChatCompletionUseCase(repository)
+        configurationProvider = FakeConfigurationProvider()
+        usecase = ChatCompletionUseCase(repository, configurationProvider)
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testGetChartsAndNewChat() = runTest{
         val values = mutableListOf<List<Chat>>()
@@ -52,7 +53,6 @@ class ChatCompletionUseCaseTest {
         assertEquals(3, afterInsert.size)
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testUpdateLastMessage() = runTest {
         val values = mutableListOf<List<Chat>>()
@@ -73,7 +73,7 @@ class ChatCompletionUseCaseTest {
         assertEquals(2, afterUpdateChatList.size)
         assertEquals(newContent, testItemAfterUpdate.lastUserMessage)
     }
-    @OptIn(ExperimentalCoroutinesApi::class)
+
     @Test
     fun testChatState() = runTest {
         val values = mutableListOf<List<Chat>>()
@@ -94,9 +94,9 @@ class ChatCompletionUseCaseTest {
         assertEquals(2, afterUpdateChatList.size)
         assertEquals(ChatState.IDLE, testItemAfterUpdate.state)
     }
-    @OptIn(ExperimentalCoroutinesApi::class)
+
     @Test
-    fun testCreateChatCompletion(){
+    fun testCreateChatCompletionWithoutStream(){
         val messages = listOf(
             MockDataCollections.userMessage1
         )
@@ -105,7 +105,7 @@ class ChatCompletionUseCaseTest {
             val chatId = 1L
             val values = mutableListOf<Resource<Message>>()
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-                usecase.createCompletion(chatId,  messages).toList(values)
+                usecase.createChatCompletion(chatId,  messages).toList(values)
             }
             val loading = values[0]
             assert(loading is Resource.Loading)
@@ -114,12 +114,15 @@ class ChatCompletionUseCaseTest {
             assert(success is Resource.Success)
             val createParameterCaptor = argumentCaptor<List<Message>>()
 
+
             val saveLocalFirstParameterCaptor = argumentCaptor<Long>()
             val saveLocalSecondParameterCaptor = argumentCaptor<Message>()
-            verify(repository, times(1)).create(createParameterCaptor.capture())
-            verify(repository, times(1)).saveLocalMessage(saveLocalFirstParameterCaptor.capture(), saveLocalSecondParameterCaptor.capture())
+            val saveLocalThirdParameterCaptor = argumentCaptor<Long>()
+            verify(repository, times(1)).createChatCompletion(createParameterCaptor.capture())
+            verify(repository, times(1)).saveLocalMessage(saveLocalFirstParameterCaptor.capture(), saveLocalSecondParameterCaptor.capture(), saveLocalThirdParameterCaptor.capture())
             assert(createParameterCaptor.lastValue === messages)
             assert(saveLocalFirstParameterCaptor.lastValue == chatId)
+            assert(saveLocalThirdParameterCaptor.lastValue == null)
 
 
             val assistantMessage = success.data
@@ -128,7 +131,6 @@ class ChatCompletionUseCaseTest {
         }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testCreateChatCompletionWithFailure(){
         val messages = listOf(
@@ -139,11 +141,11 @@ class ChatCompletionUseCaseTest {
             val chatId = 1L
             val values = mutableListOf<Resource<Message>>()
             mockkObject(repository)
-            coEvery { repository.create(any()) } returns Resource.Error(message = "Error")
-            coEvery { repository.saveLocalMessage(any(), any()) } just Runs
+            coEvery { repository.createChatCompletion(any()) } returns Resource.Error(message = "Error")
+            coEvery { repository.saveLocalMessage(any(), any()) } returns 1
 
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-                usecase.createCompletion(chatId,  messages).toList(values)
+                usecase.createChatCompletion(chatId,  messages).toList(values)
             }
             val loading = values[0]
             assert(loading is Resource.Loading)
@@ -158,7 +160,6 @@ class ChatCompletionUseCaseTest {
         }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun getConversation() = runTest {
         val chatId = 1L
