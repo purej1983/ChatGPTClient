@@ -3,7 +3,6 @@ package com.thomaslam.chatgptclient.chatecompletion
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.FakeChatGptDao
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.ChatCompletionService
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.dto.ChatCompletionChunk
-import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.dto.ChatCompletionRequest
 import com.thomaslam.chatgptclient.chatecompletion.data.repository.ChatCompletionRepositoryImpl
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Chat
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.ChatState
@@ -35,8 +34,6 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.HttpException
 import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import java.io.IOException
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -208,13 +205,13 @@ class ChatCompletionRepositoryTest {
                 .thenAnswer {
                     invocation ->
                     val callback = invocation.arguments[0] as Callback<ResponseBody>
-                    callback.onResponse(mockedCall, Response.success(MockDataCollections.mockChunk1.toResponseBody("text/event-stream".toMediaTypeOrNull())))
+                    callback.onResponse(mockedCall, Response.success(MockDataCollections.mockChunkRawData1.toResponseBody("text/event-stream".toMediaTypeOrNull())))
                     Thread.sleep(500)
-                    callback.onResponse(mockedCall, Response.success(MockDataCollections.mockChunk2.toResponseBody("text/event-stream".toMediaTypeOrNull())))
+                    callback.onResponse(mockedCall, Response.success(MockDataCollections.mockChunkRawData2.toResponseBody("text/event-stream".toMediaTypeOrNull())))
                     Thread.sleep(500)
-                    callback.onResponse(mockedCall, Response.success(MockDataCollections.mockChunk3.toResponseBody("text/event-stream".toMediaTypeOrNull())))
+                    callback.onResponse(mockedCall, Response.success(MockDataCollections.mockChunkRawData3.toResponseBody("text/event-stream".toMediaTypeOrNull())))
                     Thread.sleep(500)
-                    callback.onResponse(mockedCall, Response.success(MockDataCollections.mockChunk4.toResponseBody("text/event-stream".toMediaTypeOrNull())))
+                    callback.onResponse(mockedCall, Response.success(MockDataCollections.mockChunkRawData4.toResponseBody("text/event-stream".toMediaTypeOrNull())))
                 }
 
             val values = mutableListOf<ChatCompletionChunk>()

@@ -1,6 +1,5 @@
 package com.thomaslam.chatgptclient.chatecompletion.domain
 
-import android.util.Log
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Chat
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.ChatState
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Message
@@ -60,10 +59,10 @@ class ChatCompletionUseCase (
         var content = ""
         var conversationId: Long? = null
         repository.streamChatCompletion(messages).collect{
-
-            if(it.choices[0].message.role.isNotEmpty()) {
+            println("chunk ${it.choices[0]}")
+            if(it.choices[0].message.role != null && it.choices[0].message.role.isNotEmpty()) {
                 role = it.choices[0].message.role
-            } else if (it.choices[0].message.content.isNotEmpty()) {
+            } else if (it.choices[0].message.content != null && it.choices[0].message.content.isNotEmpty()) {
                 content += it.choices[0].message.content
             }
             if(role.isNotEmpty() && content.isNotEmpty()) {
@@ -71,7 +70,6 @@ class ChatCompletionUseCase (
                     role = role,
                     content = content
                 )
-                Log.d("UseCase", "final Reason ${it.choices[0].finalReason}")
                 if(it.choices[0].finalReason == "stop") {
                     updateChatState(chatId = chatId, state = ChatState.NEW_MESSAGE)
                 }

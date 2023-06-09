@@ -9,6 +9,7 @@ import com.thomaslam.chatgptclient.chatecompletion.domain.util.Resource
 import com.thomaslam.chatgptclient.chatecompletion.util.FakeConfigurationProvider
 import com.thomaslam.chatgptclient.chatecompletion.util.MockDataCollections
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockkObject
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
@@ -122,12 +123,70 @@ class ChatCompletionUseCaseTest {
             verify(repository, times(1)).saveLocalMessage(saveLocalFirstParameterCaptor.capture(), saveLocalSecondParameterCaptor.capture(), saveLocalThirdParameterCaptor.capture())
             assert(createParameterCaptor.lastValue === messages)
             assert(saveLocalFirstParameterCaptor.lastValue == chatId)
-            assert(saveLocalThirdParameterCaptor.lastValue == null)
+            assertNull(saveLocalThirdParameterCaptor.lastValue)
 
 
             val assistantMessage = success.data
             assertNotNull(assistantMessage)
             assert(saveLocalSecondParameterCaptor.lastValue === assistantMessage)
+        }
+    }
+
+    @Test
+    fun testCreateChatCompletionWithStream(){
+        val messages = listOf(
+            MockDataCollections.userMessage1
+        )
+        runTest {
+            mockkObject(configurationProvider)
+            every { (configurationProvider.stream) } returns true
+
+            val chatId = 1L
+            val values = mutableListOf<Resource<Message>>()
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                usecase.createChatCompletion(chatId,  messages).toList(values)
+            }
+            val loading = values[0]
+            assert(loading is Resource.Loading)
+            repository.emitChunkChange()
+            val firstMessage = values[1]
+            assert(firstMessage is Resource.Success)
+            assertEquals("assistant", firstMessage.data?.role)
+            assertEquals("Sure", firstMessage.data?.content)
+
+            val secondMessage = values[2]
+            assert(secondMessage is Resource.Success)
+            assertEquals("assistant", secondMessage.data?.role)
+            assertEquals("Sure!", secondMessage.data?.content)
+
+            val thirdMessage = values[3]
+            assert(thirdMessage is Resource.Success)
+            assertEquals("assistant", thirdMessage.data?.role)
+            assertEquals("Sure! Here", thirdMessage.data?.content)
+
+
+            val createParameterCaptor = argumentCaptor<List<Message>>()
+
+            val saveLocalFirstParameterCaptor = argumentCaptor<Long>()
+            val saveLocalSecondParameterCaptor = argumentCaptor<Message>()
+            val saveLocalThirdParameterCaptor = argumentCaptor<Long>()
+
+            verify(repository, times(1)).streamChatCompletion(createParameterCaptor.capture())
+            verify(repository, times(3)).saveLocalMessage(saveLocalFirstParameterCaptor.capture(), saveLocalSecondParameterCaptor.capture(), saveLocalThirdParameterCaptor.capture())
+
+            assert(createParameterCaptor.lastValue === messages)
+
+            assertEquals(chatId, saveLocalFirstParameterCaptor.firstValue)
+            assertEquals(firstMessage.data,saveLocalSecondParameterCaptor.firstValue)
+            assertNull(saveLocalThirdParameterCaptor.firstValue)
+
+            assertEquals(chatId, saveLocalFirstParameterCaptor.secondValue)
+            assertEquals(secondMessage.data,saveLocalSecondParameterCaptor.secondValue)
+            assertEquals(1L, saveLocalThirdParameterCaptor.secondValue)
+
+            assertEquals(chatId, saveLocalFirstParameterCaptor.thirdValue)
+            assertEquals(thirdMessage.data,saveLocalSecondParameterCaptor.thirdValue)
+            assertEquals(1L, saveLocalThirdParameterCaptor.thirdValue)
         }
     }
 
