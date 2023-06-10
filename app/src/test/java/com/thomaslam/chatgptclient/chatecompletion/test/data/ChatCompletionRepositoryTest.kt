@@ -1,4 +1,4 @@
-package com.thomaslam.chatgptclient.chatecompletion
+package com.thomaslam.chatgptclient.chatecompletion.test.data
 
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.FakeChatGptDao
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.ChatCompletionService

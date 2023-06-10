@@ -1,4 +1,4 @@
-package com.thomaslam.chatgptclient.chatecompletion
+package com.thomaslam.chatgptclient.chatecompletion.test.domain
 
 import com.thomaslam.chatgptclient.chatecompletion.data.repository.FakeChatCompletionRepository
 import com.thomaslam.chatgptclient.chatecompletion.domain.ChatCompletionUseCase
