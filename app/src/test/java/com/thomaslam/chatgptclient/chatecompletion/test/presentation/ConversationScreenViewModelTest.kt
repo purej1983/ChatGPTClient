@@ -1,4 +1,4 @@
-package com.thomaslam.chatgptclient.chatecompletion
+package com.thomaslam.chatgptclient.chatecompletion.test.presentation
 
 import androidx.lifecycle.SavedStateHandle
 import com.thomaslam.chatgptclient.chatecompletion.domain.ChatCompletionUseCase

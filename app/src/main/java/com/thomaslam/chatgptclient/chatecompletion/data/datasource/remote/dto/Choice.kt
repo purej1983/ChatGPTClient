@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Message
 
 data class Choice(
+    @SerializedName(value = "message", alternate = ["delta"])
     val message: Message,
     @SerializedName("finish_reason") val finalReason: String,
     val index: Int,

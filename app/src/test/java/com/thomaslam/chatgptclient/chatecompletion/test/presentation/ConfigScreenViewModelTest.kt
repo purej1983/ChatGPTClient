@@ -1,4 +1,4 @@
-package com.thomaslam.chatgptclient.chatecompletion
+package com.thomaslam.chatgptclient.chatecompletion.test.presentation
 
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Config
 import com.thomaslam.chatgptclient.chatecompletion.domain.use_case.ConfigUseCase

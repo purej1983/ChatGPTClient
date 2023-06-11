@@ -1,18 +1,16 @@
-package com.thomaslam.chatgptclient.chatecompletion
+package com.thomaslam.chatgptclient.chatecompletion.test.data
 
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.FakeChatGptDao
-import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.FakeChatCompletionService
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.ChatCompletionService
+import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.dto.ChatCompletionChunk
 import com.thomaslam.chatgptclient.chatecompletion.data.repository.ChatCompletionRepositoryImpl
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Chat
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.ChatState
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Message
 import com.thomaslam.chatgptclient.chatecompletion.domain.repository.ChatCompletionRepository
 import com.thomaslam.chatgptclient.chatecompletion.domain.util.Resource
-import com.thomaslam.chatgptclient.chatecompletion.util.ConfigurationProvider
 import com.thomaslam.chatgptclient.chatecompletion.util.MockDataCollections
 import io.mockk.coEvery
-import io.mockk.mockk
 import io.mockk.mockkObject
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
@@ -23,28 +21,40 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.ResponseBody
 import okhttp3.ResponseBody.Companion.toResponseBody
+import okhttp3.mockwebserver.MockWebServer
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.`when`
+import org.mockito.kotlin.any
+import retrofit2.Call
+import retrofit2.Callback
 import retrofit2.HttpException
 import retrofit2.Response
 import java.io.IOException
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class ChatCompletionRepositoryTest {
+    private lateinit var mockServer: MockWebServer
     private lateinit var repository: ChatCompletionRepository
     private lateinit var dao: FakeChatGptDao
     private lateinit var api: ChatCompletionService
-    private lateinit var configProvider: ConfigurationProvider
 
     @Before
     fun setup() {
-        configProvider = mockk(relaxed = true)
+        mockServer = MockWebServer()
+        mockServer.start(8080)
+
         dao = FakeChatGptDao()
-        api = FakeChatCompletionService()
-        repository = ChatCompletionRepositoryImpl(dao, api, configProvider)
+        api = mock(ChatCompletionService::class.java)
+        repository = ChatCompletionRepositoryImpl(dao, api)
+
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
+
     @Test
     fun testGetChats() =
         runTest {
@@ -67,7 +77,7 @@ class ChatCompletionRepositoryTest {
         }
 
 
-    @OptIn(ExperimentalCoroutinesApi::class)
+
     @Test
     fun testNewChats() =
         runTest {
@@ -87,8 +97,6 @@ class ChatCompletionRepositoryTest {
             assert(lastItem.lastUserMessage == "New Chat")
         }
 
-
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testUpdateLastUserMessage() {
         runTest {
@@ -108,7 +116,7 @@ class ChatCompletionRepositoryTest {
         }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
+
     @Test
     fun testGetConversation() {
         runTest {
@@ -130,26 +138,34 @@ class ChatCompletionRepositoryTest {
         }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
+
     @Test
     fun testSaveLocalMessage() {
         runTest {
-            val id = 2L
+            val chatId = 2L
             val values = mutableListOf<List<Message>>()
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-                repository.getConversation(id).toList(values)
+                repository.getConversation(chatId).toList(values)
             }
 
             val role = "user"
             val content = "How's attraction in Birmingham"
             dao.emitConversationChange()
             val beforeInsert = values[0]
-            assert(beforeInsert.size == 2)
-            repository.saveLocalMessage(id, Message(role, content))
+            assertEquals(2, beforeInsert.size)
+
+            val conversationId:Long = repository.saveLocalMessage(chatId, Message(role, content))
             val afterInsert = values[1]
-            assert(afterInsert.size == 3)
-            assert(afterInsert.last().role == role)
-            assert(afterInsert.last().content == content)
+            assertEquals(3,afterInsert.size)
+            assertEquals(role,afterInsert.last().role)
+            assertEquals(content,afterInsert.last().content)
+
+            val newRecordId: Long = repository.saveLocalMessage(chatId, Message(role, "updatedContent"), conversationId)
+            val updatedRecordList = values[2]
+            assertEquals(3,updatedRecordList.size)
+            assertEquals(role,updatedRecordList.last().role)
+            assertEquals("updatedContent", updatedRecordList.last().content)
+            assertEquals(conversationId, newRecordId)
         }
     }
 
@@ -161,14 +177,66 @@ class ChatCompletionRepositoryTest {
                 MockDataCollections.assistantMessage1,
                 MockDataCollections.userMessage2
             )
+            `when`(api.createChatCompletion(any())).thenReturn(MockDataCollections.mockReponse)
 
-            val success = repository.create(messages)
+            val success = repository.createChatCompletion(messages)
             assert(success is Resource.Success)
             val response = success.data
             assertNotNull(response)
             assert(response?.role == MockDataCollections.assistantMessage2.role)
             assert(response?.content == MockDataCollections.assistantMessage2.content)
         }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    @Test
+    fun testStreamCompletion() {
+        runTest {
+            val mockedCall = mock(Call::class.java) as Call<ResponseBody>
+            val messages = listOf(
+                MockDataCollections.userMessage1,
+                MockDataCollections.assistantMessage1,
+                MockDataCollections.userMessage2
+            )
+
+            `when`(api.createStreamChatCompletion(any())).thenReturn(mockedCall)
+
+            `when`(mockedCall.enqueue(any()))
+                .thenAnswer {
+                    invocation ->
+                    val callback = invocation.arguments[0] as Callback<ResponseBody>
+                    callback.onResponse(mockedCall, Response.success(MockDataCollections.mockChunkRawData1.toResponseBody("text/event-stream".toMediaTypeOrNull())))
+                    Thread.sleep(500)
+                    callback.onResponse(mockedCall, Response.success(MockDataCollections.mockChunkRawData2.toResponseBody("text/event-stream".toMediaTypeOrNull())))
+                    Thread.sleep(500)
+                    callback.onResponse(mockedCall, Response.success(MockDataCollections.mockChunkRawData3.toResponseBody("text/event-stream".toMediaTypeOrNull())))
+                    Thread.sleep(500)
+                    callback.onResponse(mockedCall, Response.success(MockDataCollections.mockChunkRawData4.toResponseBody("text/event-stream".toMediaTypeOrNull())))
+                }
+
+            val values = mutableListOf<ChatCompletionChunk>()
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                repository.streamChatCompletion(messages).toList(values)
+            }
+            assertEquals(4, values.size)
+            val firstChunk = values[0]
+            assertEquals("assistant", firstChunk.choices[0].message.role)
+            assertNull(firstChunk.choices[0].message.content)
+
+            val secondChunk = values[1]
+            assertEquals("Sure", secondChunk.choices[0].message.content)
+            assertNull(secondChunk.choices[0].message.role)
+
+            val thirdChunk = values[2]
+            assertEquals("!", thirdChunk.choices[0].message.content)
+            assertNull(thirdChunk.choices[0].message.role)
+
+            val forthChunk = values[3]
+            assertEquals(" Here", forthChunk.choices[0].message.content)
+            assertNull(forthChunk.choices[0].message.role)
+
+        }
+
     }
 
     @Test
@@ -184,7 +252,7 @@ class ChatCompletionRepositoryTest {
                 Response.error<Any>(500, "Error".toResponseBody("plain/text".toMediaTypeOrNull()))
             )
 
-            val error = repository.create(messages)
+            val error = repository.createChatCompletion(messages)
             assert(error is Resource.Error)
             val response = error.data
             assertNull(response)
@@ -204,7 +272,7 @@ class ChatCompletionRepositoryTest {
             mockkObject(api)
             coEvery { api.createChatCompletion(any()) } throws IOException("Not Network")
 
-            val error = repository.create(messages)
+            val error = repository.createChatCompletion(messages)
             assert(error is Resource.Error)
             val response = error.data
             assertNull(response)
@@ -213,7 +281,7 @@ class ChatCompletionRepositoryTest {
         }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
+
     @Test
     fun testUpdateChatState() {
         runTest {
@@ -232,7 +300,7 @@ class ChatCompletionRepositoryTest {
         }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
+
     @Test
     fun resetChatState() {
         runTest {
@@ -248,5 +316,10 @@ class ChatCompletionRepositoryTest {
             assert(filtered.id == id)
             assert(filtered.state == ChatState.IDLE)
         }
+    }
+
+    @After
+    fun tearDown() {
+        mockServer.shutdown()
     }
 }

@@ -31,16 +31,26 @@ class FakeChatGptDao: ChatGptDao {
         return chatAutoId
     }
 
-    override suspend fun insertConversation(conversation: ConversationEntity) {
-        conversations.add(
-            ConversationEntity(
-                role = conversation.role,
-                content = conversation.content,
-                chatId = conversation.chatId,
-                id = ++conversationAutoId
-            )
+    override suspend fun insertConversation(conversation: ConversationEntity): Long {
+        val id = conversation.id ?: run {
+            ++conversationAutoId
+        }
+
+        val index = conversations.indexOfFirst { it.id == id }
+        val entity = ConversationEntity(
+            role = conversation.role,
+            content = conversation.content,
+            chatId = conversation.chatId,
+            id = id
         )
+        if(index == -1) {
+            conversations.add(entity)
+        } else {
+            conversations[index] = entity
+        }
+
         emitConversationChange()
+        return id
     }
 
     override fun getConfig(): Flow<ChatGptConfigEntity> {

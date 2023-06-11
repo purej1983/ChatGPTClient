@@ -1,11 +1,13 @@
 package com.thomaslam.chatgptclient.chatecompletion.data.repository
 
+import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.dto.ChatCompletionChunk
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Chat
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.ChatState
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Message
 import com.thomaslam.chatgptclient.chatecompletion.domain.repository.ChatCompletionRepository
 import com.thomaslam.chatgptclient.chatecompletion.domain.util.Resource
 import com.thomaslam.chatgptclient.chatecompletion.util.MockDataCollections
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import org.jetbrains.annotations.VisibleForTesting
@@ -19,6 +21,7 @@ class FakeChatCompletionRepository: ChatCompletionRepository {
     private var chatAutoId: Long = 2
     private val chatFlow = MutableSharedFlow<List<Chat>>()
     private val messageFlow = MutableSharedFlow<List<Message>>()
+    private val chunkFlow = MutableSharedFlow<ChatCompletionChunk>()
     override fun getChats(): Flow<List<Chat>> {
         return chatFlow
     }
@@ -52,16 +55,24 @@ class FakeChatCompletionRepository: ChatCompletionRepository {
         emitChatChange()
     }
 
-    override suspend fun saveLocalMessage(chatId: Long, message: Message) {
-
+    override suspend fun saveLocalMessage(
+        chatId: Long,
+        message: Message,
+        conversationId: Long?
+    ): Long {
+        return 1
     }
 
-    override suspend fun create(messages: List<Message>): Resource<Message> {
+    override suspend fun createChatCompletion(messages: List<Message>): Resource<Message> {
         return Resource.Success(MockDataCollections.assistantMessage1)
     }
 
     override fun getConversation(id: Long): Flow<List<Message>> {
         return messageFlow
+    }
+
+    override fun streamChatCompletion(messages: List<Message>): Flow<ChatCompletionChunk> {
+        return chunkFlow
     }
 
     @VisibleForTesting
@@ -72,5 +83,16 @@ class FakeChatCompletionRepository: ChatCompletionRepository {
     @VisibleForTesting
     suspend fun emitMessageChange() {
         messageFlow.emit(_messages)
+    }
+
+    @VisibleForTesting
+    suspend fun emitChunkChange() {
+        chunkFlow.emit(MockDataCollections.mockCunk1)
+        delay(500)
+        chunkFlow.emit(MockDataCollections.mockCunk2)
+        delay(500)
+        chunkFlow.emit(MockDataCollections.mockCunk3)
+        delay(500)
+        chunkFlow.emit(MockDataCollections.mockCunk4)
     }
 }
