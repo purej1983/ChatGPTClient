@@ -30,7 +30,6 @@ class ChatGptGetConfigUseCaseTest {
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             getConfig().toList(values)
         }
-        repository.emitConfigChange()
         val actualConfig = values[0]
         actualConfig.apply {
             TestCase.assertEquals(MockDataCollections.config.n, this.n)

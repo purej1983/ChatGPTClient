@@ -6,28 +6,32 @@ import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.ChatState
 import com.thomaslam.chatgptclient.chatecompletion.util.MockDataCollections
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 
 class FakeChatGptDao: ChatGptDao {
-    private val chatFlow = MutableSharedFlow<List<ChatEntity>>()
-    private val conversationFlow = MutableSharedFlow<List<ConversationEntity>>()
-    private val configFlow = MutableSharedFlow<ChatGptConfigEntity>()
+    private var config = mockConfig
+    private val configFlow = MutableStateFlow(config)
+
+    private var conversations = mockConversations
+    private val conversationFlow = MutableStateFlow(conversations)
+
+    private var chats = mockChats
+    private val chatFlow = MutableStateFlow(chats)
+
+
     private var chatAutoId: Long = 2
     private var conversationAutoId: Long = 2
 
-    private val conversations = mockConversations
-
-    private val chats = mockChats
-
-    private var config = mockConfig
     override suspend fun insertChat(chat: ChatEntity): Long {
-        chats.add(
+        val newChat = chatFlow.value.toMutableList()
+        newChat.add(
             ChatEntity(
                 lastUserMessage = chat.lastUserMessage,
                 id = ++chatAutoId
             )
         )
-        emitChatChange()
+        chats = newChat
+        chatFlow.value = chats
         return chatAutoId
     }
 
@@ -36,7 +40,9 @@ class FakeChatGptDao: ChatGptDao {
             ++conversationAutoId
         }
 
-        val index = conversations.indexOfFirst { it.id == id }
+        val newConversation = conversationFlow.value.toMutableList()
+
+        val index = newConversation.indexOfFirst { it.id == id }
         val entity = ConversationEntity(
             role = conversation.role,
             content = conversation.content,
@@ -44,12 +50,12 @@ class FakeChatGptDao: ChatGptDao {
             id = id
         )
         if(index == -1) {
-            conversations.add(entity)
+            newConversation.add(entity)
         } else {
-            conversations[index] = entity
+            newConversation[index] = entity
         }
-
-        emitConversationChange()
+        conversations = newConversation
+        conversationFlow.value = conversations
         return id
     }
 
@@ -59,25 +65,31 @@ class FakeChatGptDao: ChatGptDao {
 
     override suspend fun saveConfig(config: ChatGptConfigEntity) {
         this.config = config
-        emitConfigChange()
+        configFlow.value = this.config
     }
 
     override suspend fun updateLastUserMessage(chatId: Long, lastUserMessage: String) {
-        val index = chats.indexOfFirst { it.id == chatId }
-        chats[index] = ChatEntity(lastUserMessage = lastUserMessage, id = chatId)
-        emitChatChange()
+        val newChats = chatFlow.value.toMutableList()
+        val index = newChats.indexOfFirst { it.id == chatId }
+        newChats[index] = ChatEntity(lastUserMessage = lastUserMessage, id = chatId)
+        chats = newChats
+        chatFlow.value = chats
     }
 
     override suspend fun resetChatState(chatId: Long) {
-        val index = chats.indexOfFirst { it.id == chatId }
-        chats[index] = ChatEntity(state = ChatState.IDLE, id = chatId)
-        emitChatChange()
+        val newChats = chatFlow.value.toMutableList()
+        val index = newChats.indexOfFirst { it.id == chatId }
+        newChats[index] = ChatEntity(state = ChatState.IDLE, id = chatId)
+        chats = newChats
+        chatFlow.value = chats
     }
 
     override suspend fun updateChatState(chatId: Long, state: ChatState) {
-        val index = chats.indexOfFirst { it.id == chatId }
-        chats[index] = ChatEntity(state = state, id = chatId)
-        emitChatChange()
+        val newChats = chatFlow.value.toMutableList()
+        val index = newChats.indexOfFirst { it.id == chatId }
+        newChats[index] = ChatEntity(state = state, id = chatId)
+        chats = newChats
+        chatFlow.value = chats
     }
 
     override fun getChats(): Flow<List<ChatEntity>> {
@@ -88,25 +100,13 @@ class FakeChatGptDao: ChatGptDao {
         return conversationFlow
     }
 
-    suspend fun emitChatChange() {
-        chatFlow.emit(chats)
-    }
-
-    suspend fun emitConversationChange(){
-        conversationFlow.emit(conversations)
-    }
-
-    suspend fun emitConfigChange() {
-        configFlow.emit(config)
-    }
-
     companion object {
-        val mockChats = mutableListOf(
+        val mockChats = listOf(
             ChatEntity(lastUserMessage = "testMessage1", id = 1),
             ChatEntity(lastUserMessage = "testMessage2", id = 2),
         )
 
-        val mockConversations = mutableListOf(
+        val mockConversations = listOf(
             ConversationEntity(
                 id = 1,
                 role = MockDataCollections.userMessage1.role,
