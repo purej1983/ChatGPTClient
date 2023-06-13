@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.CircularProgressIndicator
@@ -23,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.thomaslam.chatgptclient.chatecompletion.domain.model.Message
 import com.thomaslam.chatgptclient.chatecompletion.presentation.components.AssitantMessageItem
 import com.thomaslam.chatgptclient.chatecompletion.presentation.components.MessageSendBar
 import com.thomaslam.chatgptclient.chatecompletion.presentation.components.UserMessageItem
@@ -39,13 +41,28 @@ fun Conversationscreen(
         viewModel.state
     }
 
-    val scaffoldState = rememberScaffoldState()
     val listState = rememberLazyListState()
     LaunchedEffect(state.messages) {
         listState.animateScrollToItem(state.messages.size)
         viewModel.resetChatState()
     }
+    ConversationContent(
+        state = state,
+        listState = listState,
+        messageButtonOnClick = { content ->
+            viewModel.send(content)
+        }
+    )
 
+}
+
+@Composable
+fun ConversationContent(
+    state: ConversationScreenUIState,
+    listState: LazyListState,
+    messageButtonOnClick: (String) -> Unit
+) {
+    val scaffoldState = rememberScaffoldState()
     Scaffold(scaffoldState = scaffoldState)
     { it ->
         Column(
@@ -90,7 +107,7 @@ fun Conversationscreen(
                 modifier = Modifier
                     .background(MaterialTheme.colors.userBackground),
                 onMessageButtonClick = { content ->
-                    viewModel.send(content)
+                    messageButtonOnClick(content)
                 }
             )
         }
@@ -101,6 +118,22 @@ fun Conversationscreen(
 @Composable
 private fun DefaultPreview() {
     ChatGPTClientTheme {
-        Conversationscreen()
+        ConversationContent(
+            state = ConversationScreenUIState(
+                messages = listOf(
+                    Message(
+                        role = "user",
+                        content = "Hello World"
+                    ),
+                    Message(
+                        role = "assistant",
+                        content = "Hello! How can I assist you today?"
+                    )
+                ),
+                isLoading = true
+            ),
+            listState = rememberLazyListState(),
+            messageButtonOnClick = {}
+        )
     }
 }

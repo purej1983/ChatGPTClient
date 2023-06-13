@@ -29,7 +29,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
+import com.thomaslam.chatgptclient.chatecompletion.domain.model.Chat
+import com.thomaslam.chatgptclient.chatecompletion.domain.model.ChatState
 import com.thomaslam.chatgptclient.chatecompletion.presentation.components.ChatItem
 import com.thomaslam.chatgptclient.chatecompletion.presentation.util.Screen
 import com.thomaslam.chatgptclient.ui.theme.ChatGPTClientTheme
@@ -45,7 +46,7 @@ fun ChatScreen(
     val state by remember {
         viewModel.state
     }
-    val scaffoldState = rememberScaffoldState()
+
 
     LaunchedEffect(key1 = true) {
         viewModel.eventFlow.collectLatest { event ->
@@ -63,12 +64,28 @@ fun ChatScreen(
             }
         }
     }
+    ChatContent(
+        state = state,
+        floatingActionButtonOnClick = { viewModel.newChat() },
+        menuButtonOnClick = { viewModel.goToConfig() },
+        chatItemOnClick = { chatId -> viewModel.goToChat(chatId)}
+    )
+}
 
+@Composable
+fun ChatContent(
+    state: ChatScreenUIState,
+    floatingActionButtonOnClick: () -> Unit,
+    menuButtonOnClick: () -> Unit,
+    chatItemOnClick: (Long) -> Unit
+    
+) {
+    val scaffoldState = rememberScaffoldState()
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    viewModel.newChat()
+                    floatingActionButtonOnClick()
                 },
                 backgroundColor = MaterialTheme.colors.primary
             ) {
@@ -91,7 +108,7 @@ fun ChatScreen(
 
                 IconButton(
                     onClick = {
-                        viewModel.goToConfig()
+                        menuButtonOnClick()
                     },
                 ) {
                     Icon(
@@ -104,15 +121,15 @@ fun ChatScreen(
             Modifier.fillMaxWidth()
             ) {
                 items(state.chats) { item ->
-                        ChatItem(item = item) {
-                            item.id?.let { chatId ->
-                                viewModel.goToChat(chatId)
-                            }
+                    ChatItem(item = item) {
+                        item.id?.let { chatId ->
+                            chatItemOnClick(chatId)
                         }
-                        Divider(
-                            modifier = Modifier.padding(8.dp),
-                            color = MaterialTheme.colors.separatorColor
-                        )
+                    }
+                    Divider(
+                        modifier = Modifier.padding(8.dp),
+                        color = MaterialTheme.colors.separatorColor
+                    )
                 }
             }
         }
@@ -123,6 +140,33 @@ fun ChatScreen(
 @Composable
 private fun DefaultPreview() {
     ChatGPTClientTheme {
-        ChatScreen(rememberNavController())
+        ChatContent(
+            state = ChatScreenUIState(
+                chats = listOf(
+                    Chat(
+                        lastUserMessage = "Demo Message1",
+                        id = 1L
+                    ),
+                    Chat(
+                        state = ChatState.NEW_MESSAGE,
+                        lastUserMessage = "New Message2",
+                        id = 2L
+                    ),
+                    Chat(
+                        state = ChatState.ERROR,
+                        lastUserMessage = "Error Message3",
+                        id = 3L
+                    ),
+                    Chat(
+                        state = ChatState.LOADING,
+                        lastUserMessage = "LOADING",
+                        id = 3L
+                    )
+                )
+            ),
+            floatingActionButtonOnClick = {  },
+            menuButtonOnClick = {  },
+            chatItemOnClick = {}
+        )
     }
 }
