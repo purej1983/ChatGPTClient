@@ -62,7 +62,6 @@ class ChatCompletionRepositoryTest {
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
                 repository.getChats().toList(values)
             }
-            dao.emitChatChange()
             val actual = values[0]
             assertEquals(FakeChatGptDao.mockChats.size, actual.size)
             assert(actual.size == FakeChatGptDao.mockChats.size)
@@ -85,7 +84,6 @@ class ChatCompletionRepositoryTest {
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
                 repository.getChats().toList(values)
             }
-            dao.emitChatChange()
             val beforeInsert = values[0]
             assert(beforeInsert.size == 2)
             val newId = repository.newChat()
@@ -109,7 +107,7 @@ class ChatCompletionRepositoryTest {
             val id = 2L
             val updateMessage = "Test Update Message"
             repository.updateLastUserMessage(id, updateMessage)
-            val chats = values[0]
+            val chats = values[1]
             val filtered = chats.first { it.id == id }
             assert(filtered.id == id)
             assert(filtered.lastUserMessage == updateMessage)
@@ -124,7 +122,6 @@ class ChatCompletionRepositoryTest {
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
                 repository.getConversation(1L).toList(values)
             }
-            dao.emitConversationChange()
             val actual = values[0]
             assert(actual.size == FakeChatGptDao.mockConversations.size)
             actual.forEachIndexed {
@@ -150,7 +147,6 @@ class ChatCompletionRepositoryTest {
 
             val role = "user"
             val content = "How's attraction in Birmingham"
-            dao.emitConversationChange()
             val beforeInsert = values[0]
             assertEquals(2, beforeInsert.size)
 
@@ -293,7 +289,7 @@ class ChatCompletionRepositoryTest {
             val id = 2L
             val newState = ChatState.ERROR
             repository.updateChatState(id, newState)
-            val chats = values[0]
+            val chats = values[1]
             val filtered = chats.first { it.id == id }
             assert(filtered.id == id)
             assert(filtered.state == newState)

@@ -29,7 +29,6 @@ class ChatGptConfigRepositoryTest {
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             repository.getConfig().toList(values)
         }
-        dao.emitConfigChange()
         val actualConfig = values[0]
         actualConfig.apply {
             assertEquals(FakeChatGptDao.mockConfig.n, this.n)
@@ -45,7 +44,6 @@ class ChatGptConfigRepositoryTest {
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             repository.getConfig().toList(values)
         }
-        dao.emitConfigChange()
         val beforeConfig = values[0]
         beforeConfig.apply {
             assertEquals(FakeChatGptDao.mockConfig.n, this.n)
