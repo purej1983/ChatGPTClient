@@ -45,7 +45,6 @@ class ChatCompletionUseCaseTest {
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             usecase.getChats().toList(values)
         }
-        repository.emitChatChange()
         val beforeInsert = values[0]
         assertEquals(2, beforeInsert.size)
         val newId = usecase.newChat()
@@ -60,7 +59,6 @@ class ChatCompletionUseCaseTest {
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             usecase.getChats().toList(values)
         }
-        repository.emitChatChange()
         val chatId = 2L
         val beforeUpdateChatList = values[0]
         val testItemBeforeUpdate = beforeUpdateChatList.first { it.id == 2L}
@@ -81,7 +79,6 @@ class ChatCompletionUseCaseTest {
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             usecase.getChats().toList(values)
         }
-        repository.emitChatChange()
         val chatId = 2L
         val beforeUpdateChatList = values[0]
         val testItemBeforeUpdate = beforeUpdateChatList.first { it.id == 2L}
@@ -226,7 +223,6 @@ class ChatCompletionUseCaseTest {
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             usecase.getConversation(chatId).toList(values)
         }
-        repository.emitMessageChange()
         val messageList = values[0]
         assertEquals(2, messageList.size)
         assertEquals(MockDataCollections.userMessage1, messageList[0])

@@ -40,7 +40,6 @@ class ChatGptSaveConfigUseCaseTest {
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             useCase.getConfig().toList(values)
         }
-        repository.emitConfigChange()
 
         val beforeConfig = values[0]
         beforeConfig.apply {
