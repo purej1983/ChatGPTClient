@@ -4,6 +4,15 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-kapt'
     id 'com.google.dagger.hilt.android'
+    id 'jacoco'
+}
+
+jacoco {
+    // if you are using java 11 then jacoco version that support it is v0.8.7
+    toolVersion = "0.8.7"
+
+    // this is where you find html/xml/csv report for your unit test coverage check
+    reportsDirectory = file("$buildDir/reports/coverage")
 }
 
 // reading api secret
@@ -41,6 +50,9 @@ android {
 
 
     buildTypes {
+        debug {
+            testCoverageEnabled = true
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
@@ -110,4 +122,72 @@ dependencies {
     implementation "androidx.room:room-ktx:$room_version"
     kapt "androidx.room:room-compiler:$room_version"
 
+}
+
+tasks.withType(Test) {
+    // to exclude jdk classes so not included in the jacoco unit test report
+    jacoco.includeNoLocationClasses = true
+    jacoco.excludes = ['jdk.internal.*']
+}
+
+task jacocoTestCoverageVerification(type: JacocoCoverageVerification, dependsOn: ['jacocoDebug']) {
+    group = "Verification"
+    description = "Check code coverage"
+
+    onlyIf = {
+        true
+    }
+
+    violationRules {
+        rule {
+            limit {
+                // minimum coverage that we would like to have
+                // ideally the value is 1 which is 100% coverage
+                minimum = 0.3
+            }
+        }
+
+        rule {
+            enabled = false
+            element = 'CLASS'
+            includes = ['org.gradle.*']
+
+            limit {
+                counter = 'LINE'
+                value = 'TOTALCOUNT'
+                maximum = 0.3
+            }
+        }
+    }
+
+    // classes that WILL NOT BE checked on unit test coverage check
+    def excludes = [
+            '**/R.class',
+            '**/R$*.class',
+            '**/*AdapterFactory*.*',
+            '**/BuildConfig.*',
+            '**/Manifest*.*',
+            '**/*Test*.*',
+            'android/**/*.*'
+    ]
+
+    // classes that you WILL BE checked on unit test coverage check
+    classDirectories.from = fileTree(
+            dir: "$buildDir/intermediates/classes/debug",
+            excludes: excludes
+    ) + fileTree(
+            dir: "$buildDir/tmp/kotlin-classes/debug",
+            excludes: excludes
+    )
+
+    sourceDirectories.from = [
+            android.sourceSets.main.java.srcDirs,
+            "src/main/kotlin"
+    ]
+
+    // this is important! Make sure the testDebugUnitTest.exec is accessible
+    // otherwise this task will return coverage check always 0
+    executionData.from = fileTree(dir: "$buildDir", includes: [
+            "jacoco/testDebugUnitTest.exec"
+    ])
 }
