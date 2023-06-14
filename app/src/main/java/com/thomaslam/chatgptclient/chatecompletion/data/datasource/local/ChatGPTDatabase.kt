@@ -8,14 +8,16 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ChatEntity
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ChatGptConfigEntity
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ConversationEntity
+import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.MessageEntity
 
 @Database(
-    entities = [ChatEntity::class, ConversationEntity::class, ChatGptConfigEntity::class],
-    version = 5,
+    entities = [ChatEntity::class, ConversationEntity::class, ChatGptConfigEntity::class, MessageEntity::class],
+    version = 6,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
-        AutoMigration(from = 4, to = 5)
+        AutoMigration(from = 4, to = 5),
+        AutoMigration(from = 5, to = 6),
     ],
 )
 abstract class ChatGPTDatabase: RoomDatabase() {
@@ -33,6 +35,12 @@ abstract class ChatGPTDatabase: RoomDatabase() {
         val migration3To4 = object : Migration(3, 4) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("insert into Config (n, temperature, stream, max_tokens) values (1,1, false, 150)")
+            }
+        }
+
+        val migration5To6 = object : Migration(5, 6) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("insert into Message (conversationId, role, content) select id, role,content from Conversation")
             }
         }
     }

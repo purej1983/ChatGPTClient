@@ -100,7 +100,7 @@ class AppModule {
                 ChatGPTDatabase.DATABASE_NAME
             )
             .addCallback(ChatGPTDatabase.callback)
-            .addMigrations(ChatGPTDatabase.migration3To4)
+            .addMigrations(ChatGPTDatabase.migration3To4, ChatGPTDatabase.migration5To6)
             .build()
     }
 
