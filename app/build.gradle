@@ -6,6 +6,8 @@ plugins {
     id 'com.google.dagger.hilt.android'
 }
 
+apply from: '../jacoco.gradle'
+
 // reading api secret
 def apikeyPropertiesFile = rootProject.file("apikey.properties")
 def apikeyProperties = new Properties()
@@ -41,6 +43,9 @@ android {
 
 
     buildTypes {
+        debug{
+            testCoverageEnabled true
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
