@@ -24,6 +24,12 @@ abstract class ChatGPTDatabase: RoomDatabase() {
 
     companion object {
         const val DATABASE_NAME = "chat_gpt_db"
+        val callback = object: Callback() {
+            override fun onCreate(db: SupportSQLiteDatabase) {
+                super.onCreate(db)
+                db.execSQL("insert into Config (n, temperature, stream, max_tokens) values (1,1, false, 120)")
+            }
+        }
         val migration3To4 = object : Migration(3, 4) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("insert into Config (n, temperature, stream, max_tokens) values (1,1, false, 150)")
