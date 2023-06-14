@@ -40,6 +40,8 @@ abstract class ChatGPTDatabase: RoomDatabase() {
 
         val migration5To6 = object : Migration(5, 6) {
             override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("CREATE TABLE IF NOT EXISTS `Message` (`role` TEXT NOT NULL, `content` TEXT NOT NULL, `conversationId` INTEGER NOT NULL, `id` INTEGER, PRIMARY KEY(`id`), FOREIGN KEY(`conversationId`) REFERENCES `Conversation`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )")
+                database.execSQL("CREATE INDEX IF NOT EXISTS `index_Message_conversationId` ON `Message` (`conversationId`)")
                 database.execSQL("insert into Message (conversationId, role, content) select id, role,content from Conversation")
             }
         }
