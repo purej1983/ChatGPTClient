@@ -114,7 +114,7 @@ class ChatCompletionUseCaseTest {
 
 
             val saveLocalFirstParameterCaptor = argumentCaptor<Long>()
-            val saveLocalSecondParameterCaptor = argumentCaptor<Message>()
+            val saveLocalSecondParameterCaptor = argumentCaptor<List<Message>>()
             val saveLocalThirdParameterCaptor = argumentCaptor<Long>()
             verify(repository, times(1)).createChatCompletion(createParameterCaptor.capture())
             verify(repository, times(1)).saveLocalMessage(saveLocalFirstParameterCaptor.capture(), saveLocalSecondParameterCaptor.capture(), saveLocalThirdParameterCaptor.capture())
@@ -125,7 +125,7 @@ class ChatCompletionUseCaseTest {
 
             val assistantMessage = success.data
             assertNotNull(assistantMessage)
-            assert(saveLocalSecondParameterCaptor.lastValue === assistantMessage)
+            assert(saveLocalSecondParameterCaptor.lastValue === listOf(assistantMessage))
         }
     }
 
@@ -165,7 +165,7 @@ class ChatCompletionUseCaseTest {
             val createParameterCaptor = argumentCaptor<List<Message>>()
 
             val saveLocalFirstParameterCaptor = argumentCaptor<Long>()
-            val saveLocalSecondParameterCaptor = argumentCaptor<Message>()
+            val saveLocalSecondParameterCaptor = argumentCaptor<List<Message>>()
             val saveLocalThirdParameterCaptor = argumentCaptor<Long>()
 
             verify(repository, times(1)).streamChatCompletion(createParameterCaptor.capture())

@@ -66,14 +66,14 @@ class FakeChatCompletionRepository: ChatCompletionRepository {
 
     override suspend fun saveLocalMessage(
         chatId: Long,
-        message: Message,
+        messages: List<Message>,
         conversationId: Long?
     ): Long {
         return 1
     }
 
-    override suspend fun createChatCompletion(messages: List<Message>): Resource<Message> {
-        return Resource.Success(MockDataCollections.assistantMessage1)
+    override suspend fun createChatCompletion(messages: List<Message>): Resource<List<Message>> {
+        return Resource.Success(listOf(MockDataCollections.assistantMessage1))
     }
 
     override fun getConversation(id: Long): Flow<List<Message>> {

@@ -62,7 +62,8 @@ interface ChatGptDao {
                 MessageEntity(
                     role = message.role,
                     content = message.content,
-                    conversationId = id
+                    conversationId = id,
+                    id = message.id
                 )
             )
         }
