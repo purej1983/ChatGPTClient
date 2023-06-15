@@ -31,7 +31,9 @@ fun AssitantMessageItem(
     content: String,
     backgroundColor: Color,
     index: Int,
-    total: Int
+    total: Int,
+    navigateToPrevMessage:() -> Unit,
+    navigateToNextMessage:() -> Unit,
     ) {
     Box(
         modifier = Modifier.background(backgroundColor)
@@ -64,8 +66,8 @@ fun AssitantMessageItem(
                 PageControl(
                     index = index,
                     total = total,
-                    onPreviousClick = { /*TODO*/ },
-                    onNextClick = { })
+                    onPreviousClick = { navigateToPrevMessage()},
+                    onNextClick = { navigateToNextMessage() })
                     
 
                 Spacer(modifier = Modifier.weight(1f))
@@ -122,7 +124,9 @@ private fun DefaultPreview() {
                         "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for 'lorem ipsum' will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like).",
             backgroundColor = MaterialTheme.colors.assistantBackground,
             index = 0,
-            total = 1
+            total = 1,
+            navigateToPrevMessage = {},
+            navigateToNextMessage = {}
         )
     }
 }

@@ -9,6 +9,7 @@ import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.dto.Ch
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.dto.SSE
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Chat
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.ChatState
+import com.thomaslam.chatgptclient.chatecompletion.domain.model.ConversationWithSelectMessage
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Message
 import com.thomaslam.chatgptclient.chatecompletion.domain.repository.ChatCompletionRepository
 import com.thomaslam.chatgptclient.chatecompletion.domain.util.Resource
@@ -106,6 +107,13 @@ class ChatCompletionRepositoryImpl (
         }
     }
 
+    override suspend fun navigateToMessage(conversationId: Long, next: Boolean) {
+        chatGptDao.updateSelectedMessage(
+            change = if(next) 1 else -1,
+            conversationId = conversationId
+        )
+    }
+
     private fun stream(call: Call<ResponseBody>): Flow<SSE> {
 
         val flow:Flow<SSE> = callbackFlow<SSE> {
@@ -149,10 +157,17 @@ class ChatCompletionRepositoryImpl (
         return flow
     }
 
-    override fun getConversation(id: Long): Flow<List<Message>> {
+    override fun getConversation(id: Long): Flow<List<ConversationWithSelectMessage>> {
         return flow {
             chatGptDao.getConversationByChatId(id).collect {list ->
-                emit(list.map { it.toMessage() })
+                emit(list.map {
+                    ConversationWithSelectMessage(
+                        conversationId = it.conversation.id!!,
+                        selectMessageIdx = it.conversation.selectedMessageIdx,
+                        selectMessage = it.toMessage(),
+                        totalMessage = it.messages.size
+                    )
+                })
             }
         }
     }

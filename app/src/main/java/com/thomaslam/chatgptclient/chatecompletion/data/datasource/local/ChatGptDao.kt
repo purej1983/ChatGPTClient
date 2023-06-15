@@ -69,4 +69,7 @@ interface ChatGptDao {
         }
         return id
     }
+
+    @Query("Update Conversation SET selectedMessageIdx= selectedMessageIdx + :change where id=:conversationId")
+    suspend fun updateSelectedMessage(change: Int, conversationId: Long)
 }

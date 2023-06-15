@@ -15,9 +15,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.thomaslam.chatgptclient.ui.theme.ChatGPTClientTheme
+import com.thomaslam.chatgptclient.ui.theme.assistantBackground
 import com.thomaslam.chatgptclient.ui.theme.iconTintColor
 import com.thomaslam.chatgptclient.ui.theme.textColor
-import com.thomaslam.chatgptclient.ui.theme.userBackground
 
 @Composable
 fun PageControl(index: Int, total: Int, onPreviousClick: ()->Unit, onNextClick: ()->Unit) {
@@ -35,10 +35,10 @@ fun PageControl(index: Int, total: Int, onPreviousClick: ()->Unit, onNextClick: 
         return
     }
     Row(
-        modifier = Modifier.background(MaterialTheme.colors.userBackground)
+        modifier = Modifier.background(MaterialTheme.colors.assistantBackground)
     ) {
         IconButton(
-            modifier = Modifier.background(MaterialTheme.colors.userBackground),
+            modifier = Modifier.background(MaterialTheme.colors.assistantBackground),
             onClick = {
                 onPreviousClick()
             },
@@ -57,7 +57,7 @@ fun PageControl(index: Int, total: Int, onPreviousClick: ()->Unit, onNextClick: 
         )
 
         IconButton(
-            modifier = Modifier.background(MaterialTheme.colors.userBackground),
+            modifier = Modifier.background(MaterialTheme.colors.assistantBackground),
             onClick = {
                 onNextClick()
             },
@@ -75,7 +75,7 @@ fun PageControl(index: Int, total: Int, onPreviousClick: ()->Unit, onNextClick: 
 @Preview(showBackground = true)
 @Composable
 private fun DefaultPreview() {
-    ChatGPTClientTheme(darkTheme = true) {
+    ChatGPTClientTheme(darkTheme = false) {
         PageControl(
             index = 0,
             total = 10,

@@ -54,7 +54,7 @@ class ConversationViewModel @Inject constructor(
     fun send(content: String) {
 
         val newUserMessage = Message(content = content)
-        val messages = _state.value.messages + newUserMessage
+        val messages = _state.value.messages.map { it.selectMessage } + newUserMessage
         appendMessage(newUserMessage)
         scope.launch {
 
@@ -67,6 +67,18 @@ class ConversationViewModel @Inject constructor(
         }
     }
 
+    fun navigateToPrev(conversationId: Long) {
+        viewModelScope.launch {
+            chatCompletionUseCase.navigateToMessage(conversationId, false)
+        }
+    }
+
+    fun navigateToNext(conversationId: Long) {
+        viewModelScope.launch {
+            chatCompletionUseCase.navigateToMessage(conversationId, true)
+        }
+    }
+
     private fun setLoading(isLoading: Boolean) {
         _state.value = state.value.copy(
             isLoading = isLoading
@@ -74,10 +86,6 @@ class ConversationViewModel @Inject constructor(
     }
 
     private fun appendMessage(message: Message) {
-        val newMessages = _state.value.messages + message
-        _state.value = state.value.copy(
-            messages = newMessages
-        )
         scope.launch {
             chatCompletionUseCase.updateLastUserMessage(currentChatId, message.content)
             chatCompletionUseCase.saveMessage(currentChatId, listOf(message))

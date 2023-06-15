@@ -2,6 +2,7 @@ package com.thomaslam.chatgptclient.chatecompletion.domain
 
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Chat
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.ChatState
+import com.thomaslam.chatgptclient.chatecompletion.domain.model.ConversationWithSelectMessage
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Message
 import com.thomaslam.chatgptclient.chatecompletion.domain.repository.ChatCompletionRepository
 import com.thomaslam.chatgptclient.chatecompletion.domain.util.Resource
@@ -85,7 +86,7 @@ class ChatCompletionUseCase (
         }
     }
 
-    fun getConversation(id: Long): Flow<List<Message>> {
+    fun getConversation(id: Long): Flow<List<ConversationWithSelectMessage>> {
         return repository.getConversation(id)
     }
 
@@ -98,6 +99,10 @@ class ChatCompletionUseCase (
 
     suspend fun resetChatState(chatId: Long) {
         repository.resetChatState(chatId = chatId)
+    }
+
+    suspend fun navigateToMessage(conversationId: Long, next: Boolean) {
+        repository.navigateToMessage(conversationId = conversationId, next = next)
     }
 
     private suspend fun updateChatState(chatId: Long, state: ChatState) {
