@@ -14,13 +14,14 @@ import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.
 
 @Database(
     entities = [ChatEntity::class, ConversationEntity::class, ChatGptConfigEntity::class, MessageEntity::class],
-    version = 7,
+    version = 8,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
         AutoMigration(from = 4, to = 5),
         AutoMigration(from = 5, to = 6),
         AutoMigration(from = 6, to = 7, spec = ChatGPTDatabase.autoMigration6to7::class),
+        AutoMigration(from = 7, to = 8)
     ],
 )
 abstract class ChatGPTDatabase: RoomDatabase() {

@@ -15,4 +15,7 @@ data class ConversationEntity(
     @ColumnInfo(index = true)
     val chatId: Long,
     @PrimaryKey val id: Long? = null,
+
+    @ColumnInfo(defaultValue = "0")
+    val selectedMessageIdx: Int = 0
 )

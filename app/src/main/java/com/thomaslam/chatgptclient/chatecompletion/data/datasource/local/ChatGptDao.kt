@@ -8,7 +8,7 @@ import androidx.room.Transaction
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ChatEntity
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ChatGptConfigEntity
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ConversationEntity
-import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ConversationWithMessages
+import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ConversationWithMessagesEntity
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.MessageEntity
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.ChatState
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Message
@@ -44,7 +44,7 @@ interface ChatGptDao {
     fun getChats(): Flow<List<ChatEntity>>
 
     @Query("SELECT * FROM Conversation where chatId=:chatId")
-    fun getConversationByChatId(chatId: Long): Flow<List<ConversationWithMessages>>
+    fun getConversationByChatId(chatId: Long): Flow<List<ConversationWithMessagesEntity>>
 
     @Transaction
     suspend fun insertConversationWithMessage(chatId: Long, conversationId: Long?,  messages: List<Message>): Long {

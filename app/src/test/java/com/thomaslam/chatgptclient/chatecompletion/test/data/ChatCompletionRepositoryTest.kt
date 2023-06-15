@@ -127,7 +127,7 @@ class ChatCompletionRepositoryTest {
             actual.forEachIndexed {
                     index, conversation ->
                 run {
-                    val expectConversation = FakeChatGptDao.mockConversationWithMessages[index]
+                    val expectConversation = FakeChatGptDao.mockEntityConversationWithMessages[index]
                     assert(conversation.role == expectConversation.toMessage().role)
                     assert(conversation.content == expectConversation.toMessage().content)
                 }
