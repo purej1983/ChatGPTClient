@@ -42,7 +42,7 @@ class ChatCompletionUseCase (
             assistantMessage?.let {
                 saveMessage(chatId, assistantMessage)
                 updateChatState(chatId = chatId, state = ChatState.NEW_MESSAGE)
-                emit(Resource.Success(assistantMessage))
+                emit(Resource.Success(assistantMessage.first()))
             }
         } else if (chatCompletionResult is Resource.Error) {
             val errorMessage = chatCompletionResult.message ?: ""
@@ -55,26 +55,32 @@ class ChatCompletionUseCase (
     private suspend fun streamChatCompletion(chatId: Long, messages: List<Message>): Flow<Resource<Message>> = flow {
         emit(Resource.Loading())
         updateChatState(chatId = chatId, state = ChatState.LOADING)
-        var role = ""
-        var content = ""
+        val roleMap = mutableMapOf<Int, String>()
+        val contentMap = mutableMapOf<Int, String>()
+        val messsageMap = mutableMapOf<Int, Message>()
         var conversationId: Long? = null
         repository.streamChatCompletion(messages).collect{
-            println("chunk ${it.choices[0]}")
+            val idx = it.choices[0].index
             if(it.choices[0].message.role != null && it.choices[0].message.role.isNotEmpty()) {
-                role = it.choices[0].message.role
+                roleMap[idx] = it.choices[0].message.role
             } else if (it.choices[0].message.content != null && it.choices[0].message.content.isNotEmpty()) {
-                content += it.choices[0].message.content
+                val content = contentMap[idx] ?: ""
+                contentMap[idx] = content + it.choices[0].message.content
             }
-            if(role.isNotEmpty() && content.isNotEmpty()) {
-                val message = Message(
-                    role = role,
-                    content = content
-                )
-                if(it.choices[0].finalReason == "stop") {
-                    updateChatState(chatId = chatId, state = ChatState.NEW_MESSAGE)
+            roleMap[idx]?.let { role ->
+                contentMap[idx]?.let { content ->
+                    val message = Message(
+                        role = role,
+                        content = content
+                    )
+                    messsageMap[idx] = message
+                    if(it.choices[0].finalReason == "stop") {
+                        updateChatState(chatId = chatId, state = ChatState.NEW_MESSAGE)
+                    }
+                    val newAssitantMessages = messsageMap.toSortedMap().values.toList()
+                    conversationId = saveMessage(chatId, newAssitantMessages, conversationId)
+                    emit(Resource.Success(newAssitantMessages.first()))
                 }
-                conversationId = saveMessage(chatId, message, conversationId)
-                emit(Resource.Success(message))
             }
         }
     }
@@ -86,8 +92,8 @@ class ChatCompletionUseCase (
     suspend fun updateLastUserMessage(chatId: Long, content: String) {
         repository.updateLastUserMessage(chatId, content)
     }
-    suspend fun saveMessage(chatId: Long, message: Message, conversationId: Long? = null): Long {
-        return repository.saveLocalMessage(chatId, message, conversationId)
+    suspend fun saveMessage(chatId: Long, messages: List<Message>, conversationId: Long? = null): Long {
+        return repository.saveLocalMessage(chatId, messages, conversationId)
     }
 
     suspend fun resetChatState(chatId: Long) {

@@ -3,7 +3,6 @@ package com.thomaslam.chatgptclient.chatecompletion.data.repository
 import com.google.gson.Gson
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.ChatGptDao
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ChatEntity
-import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ConversationEntity
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.ChatCompletionService
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.dto.ChatCompletionChunk
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.dto.ChatCompletionRequest
@@ -59,32 +58,25 @@ class ChatCompletionRepositoryImpl (
         chatGptDao.updateChatState(chatId, state)
     }
 
-    override suspend fun saveLocalMessage(chatId :Long, message: Message, conversationId: Long?): Long {
-        val entity = if(conversationId != null)
-            ConversationEntity(
-                id = conversationId,
-                role = message.role,
-                content = message.content,
-                chatId = chatId
-            ) else
-            ConversationEntity(
-                role = message.role,
-                content = message.content,
-                chatId = chatId
-            )
-        return chatGptDao.insertConversation(
-            entity
+    override suspend fun saveLocalMessage(chatId :Long, messages: List<Message>, conversationId: Long?): Long {
+        val newID = chatGptDao.insertConversationWithMessage(
+            chatId = chatId,
+            conversationId = conversationId,
+            messages = messages
         )
+        return newID
     }
 
-    override suspend fun createChatCompletion(messages: List<Message>): Resource<Message> {
+    override suspend fun createChatCompletion(messages: List<Message>): Resource<List<Message>> {
         try {
             val response = chatCompletionService.createChatCompletion(
                 ChatCompletionRequest(
-                    messages = messages
+                    messages = messages,
+                    n = 2
+
                 )
             )
-            return Resource.Success(response.choices.first().message)
+            return Resource.Success(response.choices.map { it.message })
         } catch(e: HttpException) {
             return Resource.Error(
                 message = "Oops, something went wrong!"
@@ -100,7 +92,8 @@ class ChatCompletionRepositoryImpl (
         val call:Call<ResponseBody> = chatCompletionService.createStreamChatCompletion(
             ChatCompletionRequest(
                 messages = messages,
-                stream = true
+                stream = true,
+                n = 2
             )
         )
         return stream(call).transform { sse ->

@@ -80,7 +80,7 @@ class ConversationViewModel @Inject constructor(
         )
         scope.launch {
             chatCompletionUseCase.updateLastUserMessage(currentChatId, message.content)
-            chatCompletionUseCase.saveMessage(currentChatId, message)
+            chatCompletionUseCase.saveMessage(currentChatId, listOf(message))
         }
     }
 }

@@ -13,8 +13,8 @@ interface ChatCompletionRepository {
     suspend fun updateLastUserMessage(chatId: Long, content: String)
     suspend fun resetChatState(chatId: Long)
     suspend fun updateChatState(chatId: Long, state: ChatState)
-    suspend fun saveLocalMessage(chatId :Long, message: Message, conversationId: Long? = null): Long
-    suspend fun createChatCompletion(messages: List<Message>): Resource<Message>
+    suspend fun saveLocalMessage(chatId :Long, messages: List<Message>, conversationId: Long? = null): Long
+    suspend fun createChatCompletion(messages: List<Message>): Resource<List<Message>>
     fun getConversation(id: Long): Flow<List<Message>>
     fun streamChatCompletion(messages: List<Message>): Flow<ChatCompletionChunk>
 }
