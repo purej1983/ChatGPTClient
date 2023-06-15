@@ -125,7 +125,7 @@ class ChatCompletionUseCaseTest {
 
             val assistantMessage = success.data
             assertNotNull(assistantMessage)
-            assert(saveLocalSecondParameterCaptor.lastValue === listOf(assistantMessage))
+            assertEquals(listOf(assistantMessage), saveLocalSecondParameterCaptor.lastValue)
         }
     }
 
@@ -174,15 +174,15 @@ class ChatCompletionUseCaseTest {
             assert(createParameterCaptor.lastValue === messages)
 
             assertEquals(chatId, saveLocalFirstParameterCaptor.firstValue)
-            assertEquals(firstMessage.data,saveLocalSecondParameterCaptor.firstValue)
+            assertEquals(listOf(firstMessage.data),saveLocalSecondParameterCaptor.firstValue)
             assertNull(saveLocalThirdParameterCaptor.firstValue)
 
             assertEquals(chatId, saveLocalFirstParameterCaptor.secondValue)
-            assertEquals(secondMessage.data,saveLocalSecondParameterCaptor.secondValue)
+            assertEquals(listOf(secondMessage.data),saveLocalSecondParameterCaptor.secondValue)
             assertEquals(1L, saveLocalThirdParameterCaptor.secondValue)
 
             assertEquals(chatId, saveLocalFirstParameterCaptor.thirdValue)
-            assertEquals(thirdMessage.data,saveLocalSecondParameterCaptor.thirdValue)
+            assertEquals(listOf(thirdMessage.data),saveLocalSecondParameterCaptor.thirdValue)
             assertEquals(1L, saveLocalThirdParameterCaptor.thirdValue)
         }
     }
