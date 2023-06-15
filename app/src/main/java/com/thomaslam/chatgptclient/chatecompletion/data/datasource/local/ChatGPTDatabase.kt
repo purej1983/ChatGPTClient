@@ -2,7 +2,9 @@ package com.thomaslam.chatgptclient.chatecompletion.data.datasource.local
 
 import androidx.room.AutoMigration
 import androidx.room.Database
+import androidx.room.DeleteColumn
 import androidx.room.RoomDatabase
+import androidx.room.migration.AutoMigrationSpec
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ChatEntity
@@ -12,17 +14,29 @@ import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.
 
 @Database(
     entities = [ChatEntity::class, ConversationEntity::class, ChatGptConfigEntity::class, MessageEntity::class],
-    version = 6,
+    version = 7,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
         AutoMigration(from = 4, to = 5),
         AutoMigration(from = 5, to = 6),
+        AutoMigration(from = 6, to = 7, spec = ChatGPTDatabase.autoMigration6to7::class),
     ],
 )
 abstract class ChatGPTDatabase: RoomDatabase() {
 
     abstract val dao: ChatGptDao
+    @DeleteColumn.Entries(
+        DeleteColumn(
+            tableName = "Conversation",
+            columnName = "role"
+        ),
+        DeleteColumn(
+            tableName = "Conversation",
+            columnName = "content"
+        )
+    )
+    class autoMigration6to7: AutoMigrationSpec
 
     companion object {
         const val DATABASE_NAME = "chat_gpt_db"
