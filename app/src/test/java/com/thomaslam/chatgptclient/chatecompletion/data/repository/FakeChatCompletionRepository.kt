@@ -3,6 +3,7 @@ package com.thomaslam.chatgptclient.chatecompletion.data.repository
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.dto.ChatCompletionChunk
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Chat
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.ChatState
+import com.thomaslam.chatgptclient.chatecompletion.domain.model.ConversationWithSelectMessage
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Message
 import com.thomaslam.chatgptclient.chatecompletion.domain.repository.ChatCompletionRepository
 import com.thomaslam.chatgptclient.chatecompletion.domain.util.Resource
@@ -15,13 +16,23 @@ import org.jetbrains.annotations.VisibleForTesting
 
 class FakeChatCompletionRepository: ChatCompletionRepository {
     private var _chats: List<Chat> = MockDataCollections.chats
-    private val _messages: List<Message> = listOf(
-            MockDataCollections.userMessage1,
-            MockDataCollections.assistantMessage1
+    private val _conversations: List<ConversationWithSelectMessage> = listOf(
+        ConversationWithSelectMessage(
+            conversationId = 1,
+            selectMessage = MockDataCollections.userMessage1,
+            selectMessageIdx = 0,
+            totalMessage = 1
+        ),
+        ConversationWithSelectMessage(
+            conversationId = 2,
+            selectMessage = MockDataCollections.assistantMessage1,
+            selectMessageIdx = 0,
+            totalMessage = 1
+        )
     )
     private var chatAutoId: Long = 2
     private val chatFlow = MutableStateFlow(_chats)
-    private val messageFlow = MutableStateFlow(_messages)
+    private val conversationFlow = MutableStateFlow(_conversations)
     private val chunkFlow = MutableSharedFlow<ChatCompletionChunk>()
     override fun getChats(): Flow<List<Chat>> {
         return chatFlow
@@ -76,12 +87,16 @@ class FakeChatCompletionRepository: ChatCompletionRepository {
         return Resource.Success(listOf(MockDataCollections.assistantMessage1))
     }
 
-    override fun getConversation(id: Long): Flow<List<Message>> {
-        return messageFlow
+    override fun getConversation(id: Long): Flow<List<ConversationWithSelectMessage>> {
+        return conversationFlow
     }
 
     override fun streamChatCompletion(messages: List<Message>): Flow<ChatCompletionChunk> {
         return chunkFlow
+    }
+
+    override suspend fun navigateToMessage(conversationId: Long, next: Boolean) {
+
     }
 
     @VisibleForTesting

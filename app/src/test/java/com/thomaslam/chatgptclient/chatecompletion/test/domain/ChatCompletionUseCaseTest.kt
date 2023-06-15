@@ -4,6 +4,7 @@ import com.thomaslam.chatgptclient.chatecompletion.data.repository.FakeChatCompl
 import com.thomaslam.chatgptclient.chatecompletion.domain.ChatCompletionUseCase
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Chat
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.ChatState
+import com.thomaslam.chatgptclient.chatecompletion.domain.model.ConversationWithSelectMessage
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Message
 import com.thomaslam.chatgptclient.chatecompletion.domain.util.Resource
 import com.thomaslam.chatgptclient.chatecompletion.util.FakeConfigurationProvider
@@ -219,13 +220,13 @@ class ChatCompletionUseCaseTest {
     @Test
     fun getConversation() = runTest {
         val chatId = 1L
-        val values = mutableListOf<List<Message>>()
+        val values = mutableListOf<List<ConversationWithSelectMessage>>()
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             usecase.getConversation(chatId).toList(values)
         }
         val messageList = values[0]
         assertEquals(2, messageList.size)
-        assertEquals(MockDataCollections.userMessage1, messageList[0])
-        assertEquals(MockDataCollections.assistantMessage1, messageList[1])
+        assertEquals(MockDataCollections.userMessage1, messageList[0].selectMessage)
+        assertEquals(MockDataCollections.assistantMessage1, messageList[1].selectMessage)
     }
 }

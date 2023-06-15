@@ -6,6 +6,7 @@ import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.dto.Ch
 import com.thomaslam.chatgptclient.chatecompletion.data.repository.ChatCompletionRepositoryImpl
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Chat
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.ChatState
+import com.thomaslam.chatgptclient.chatecompletion.domain.model.ConversationWithSelectMessage
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Message
 import com.thomaslam.chatgptclient.chatecompletion.domain.repository.ChatCompletionRepository
 import com.thomaslam.chatgptclient.chatecompletion.domain.util.Resource
@@ -118,7 +119,7 @@ class ChatCompletionRepositoryTest {
     @Test
     fun testGetConversation() {
         runTest {
-            val values = mutableListOf<List<Message>>()
+            val values = mutableListOf<List<ConversationWithSelectMessage>>()
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
                 repository.getConversation(1L).toList(values)
             }
@@ -128,8 +129,8 @@ class ChatCompletionRepositoryTest {
                     index, conversation ->
                 run {
                     val expectConversation = FakeChatGptDao.mockEntityConversationWithMessages[index]
-                    assert(conversation.role == expectConversation.toMessage().role)
-                    assert(conversation.content == expectConversation.toMessage().content)
+                    assert(conversation.selectMessage.role == expectConversation.toMessage().role)
+                    assert(conversation.selectMessage.content == expectConversation.toMessage().content)
                 }
             }
         }
@@ -140,7 +141,7 @@ class ChatCompletionRepositoryTest {
     fun testSaveLocalMessage() {
         runTest {
             val chatId = 2L
-            val values = mutableListOf<List<Message>>()
+            val values = mutableListOf<List<ConversationWithSelectMessage>>()
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
                 repository.getConversation(chatId).toList(values)
             }
@@ -153,14 +154,14 @@ class ChatCompletionRepositoryTest {
             val conversationId:Long = repository.saveLocalMessage(chatId, listOf(Message(role, content)))
             val afterInsert = values[1]
             assertEquals(3,afterInsert.size)
-            assertEquals(role,afterInsert.last().role)
-            assertEquals(content,afterInsert.last().content)
+            assertEquals(role,afterInsert.last().selectMessage.role)
+            assertEquals(content,afterInsert.last().selectMessage.content)
 
             val newRecordId: Long = repository.saveLocalMessage(chatId, listOf(Message(role, "updatedContent", 3L)), conversationId)
             val updatedRecordList = values[2]
             assertEquals(3,updatedRecordList.size)
-            assertEquals(role,updatedRecordList.last().role)
-            assertEquals("updatedContent", updatedRecordList.last().content)
+            assertEquals(role,updatedRecordList.last().selectMessage.role)
+            assertEquals("updatedContent", updatedRecordList.last().selectMessage.content)
             assertEquals(conversationId, newRecordId)
         }
     }

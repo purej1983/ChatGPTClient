@@ -194,4 +194,8 @@ class FakeChatGptDao: ChatGptDao {
 
         return id
     }
+
+    override suspend fun updateSelectedMessage(change: Int, conversationId: Long) {
+
+    }
 }
