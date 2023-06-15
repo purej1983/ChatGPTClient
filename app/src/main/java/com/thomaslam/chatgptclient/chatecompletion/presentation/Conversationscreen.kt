@@ -87,7 +87,9 @@ fun ConversationContent(
                     } else {
                         AssitantMessageItem(
                             content = item.content,
-                            backgroundColor = MaterialTheme.colors.assistantBackground
+                            backgroundColor = MaterialTheme.colors.assistantBackground,
+                            index = 0,
+                            total = 1
                         )
                     }
                     Divider(

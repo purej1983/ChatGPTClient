@@ -3,7 +3,7 @@ package com.thomaslam.chatgptclient.chatecompletion.data.datasource.local
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ChatEntity
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ChatGptConfigEntity
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ConversationEntity
-import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ConversationWithMessages
+import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ConversationWithMessagesEntity
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.MessageEntity
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.ChatState
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Message
@@ -21,7 +21,7 @@ class FakeChatGptDao: ChatGptDao {
     private var messages = mockMessages
     private val messagesFlow = MutableStateFlow(messages)
 
-    private var conversationsWithMessages = mockConversationWithMessages
+    private var conversationsWithMessages = mockEntityConversationWithMessages
     private val conversationWithMessagesFlow = MutableStateFlow(conversationsWithMessages)
     private var chats = mockChats
     private val chatFlow = MutableStateFlow(chats)
@@ -125,7 +125,7 @@ class FakeChatGptDao: ChatGptDao {
         return chatFlow
     }
 
-    override fun getConversationByChatId(chatId: Long): Flow<List<ConversationWithMessages>> {
+    override fun getConversationByChatId(chatId: Long): Flow<List<ConversationWithMessagesEntity>> {
         return conversationWithMessagesFlow
     }
 
@@ -158,12 +158,12 @@ class FakeChatGptDao: ChatGptDao {
                 conversationId = 2
             )
         )
-        val mockConversationWithMessages = listOf(
-            ConversationWithMessages(
+        val mockEntityConversationWithMessages = listOf(
+            ConversationWithMessagesEntity(
                 conversation = mockConversations.first { it.id == 1L },
                 messages = mockMessages.filter { it.conversationId == 1L }
             ),
-            ConversationWithMessages(
+            ConversationWithMessagesEntity(
                 conversation = mockConversations.first { it.id == 2L },
                 messages = mockMessages.filter { it.conversationId == 2L }
             ),
@@ -185,7 +185,7 @@ class FakeChatGptDao: ChatGptDao {
     ): Long {
         val id = super.insertConversationWithMessage(chatId, conversationId, messages)
         conversationsWithMessages = conversations.map {
-            ConversationWithMessages(
+            ConversationWithMessagesEntity(
                 conversation = it,
                 messages = this.messages.filter { message -> message.conversationId == it.id }
             )
