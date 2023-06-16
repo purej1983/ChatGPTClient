@@ -3,13 +3,13 @@ package com.thomaslam.chatgptclient.chatecompletion.data.repository
 import com.google.gson.Gson
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.ChatGptDao
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ChatEntity
-import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ConversationEntity
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.ChatCompletionService
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.dto.ChatCompletionChunk
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.dto.ChatCompletionRequest
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.remote.dto.SSE
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Chat
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.ChatState
+import com.thomaslam.chatgptclient.chatecompletion.domain.model.ConversationWithSelectMessage
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Message
 import com.thomaslam.chatgptclient.chatecompletion.domain.repository.ChatCompletionRepository
 import com.thomaslam.chatgptclient.chatecompletion.domain.util.Resource
@@ -59,32 +59,25 @@ class ChatCompletionRepositoryImpl (
         chatGptDao.updateChatState(chatId, state)
     }
 
-    override suspend fun saveLocalMessage(chatId :Long, message: Message, conversationId: Long?): Long {
-        val entity = if(conversationId != null)
-            ConversationEntity(
-                id = conversationId,
-                role = message.role,
-                content = message.content,
-                chatId = chatId
-            ) else
-            ConversationEntity(
-                role = message.role,
-                content = message.content,
-                chatId = chatId
-            )
-        return chatGptDao.insertConversation(
-            entity
+    override suspend fun saveLocalMessage(chatId :Long, messages: List<Message>, conversationId: Long?): Long {
+        val newID = chatGptDao.insertConversationWithMessage(
+            chatId = chatId,
+            conversationId = conversationId,
+            messages = messages
         )
+        return newID
     }
 
-    override suspend fun createChatCompletion(messages: List<Message>): Resource<Message> {
+    override suspend fun createChatCompletion(messages: List<Message>): Resource<List<Message>> {
         try {
             val response = chatCompletionService.createChatCompletion(
                 ChatCompletionRequest(
-                    messages = messages
+                    messages = messages,
+                    n = 2
+
                 )
             )
-            return Resource.Success(response.choices.first().message)
+            return Resource.Success(response.choices.map { it.message })
         } catch(e: HttpException) {
             return Resource.Error(
                 message = "Oops, something went wrong!"
@@ -100,7 +93,8 @@ class ChatCompletionRepositoryImpl (
         val call:Call<ResponseBody> = chatCompletionService.createStreamChatCompletion(
             ChatCompletionRequest(
                 messages = messages,
-                stream = true
+                stream = true,
+                n = 2
             )
         )
         return stream(call).transform { sse ->
@@ -111,6 +105,13 @@ class ChatCompletionRepositoryImpl (
                 )
             )
         }
+    }
+
+    override suspend fun navigateToMessage(conversationId: Long, next: Boolean) {
+        chatGptDao.updateSelectedMessage(
+            change = if(next) 1 else -1,
+            conversationId = conversationId
+        )
     }
 
     private fun stream(call: Call<ResponseBody>): Flow<SSE> {
@@ -156,10 +157,17 @@ class ChatCompletionRepositoryImpl (
         return flow
     }
 
-    override fun getConversation(id: Long): Flow<List<Message>> {
+    override fun getConversation(id: Long): Flow<List<ConversationWithSelectMessage>> {
         return flow {
             chatGptDao.getConversationByChatId(id).collect {list ->
-                emit(list.map { it.toMessage() })
+                emit(list.map {
+                    ConversationWithSelectMessage(
+                        conversationId = it.conversation.id!!,
+                        selectMessageIdx = it.conversation.selectedMessageIdx,
+                        selectMessage = it.toMessage(),
+                        totalMessage = it.messages.size
+                    )
+                })
             }
         }
     }

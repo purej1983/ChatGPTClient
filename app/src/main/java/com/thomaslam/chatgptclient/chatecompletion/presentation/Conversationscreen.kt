@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.thomaslam.chatgptclient.chatecompletion.domain.model.ConversationWithSelectMessage
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Message
 import com.thomaslam.chatgptclient.chatecompletion.presentation.components.AssitantMessageItem
 import com.thomaslam.chatgptclient.chatecompletion.presentation.components.MessageSendBar
@@ -51,6 +52,12 @@ fun Conversationscreen(
         listState = listState,
         messageButtonOnClick = { content ->
             viewModel.send(content)
+        },
+        navigateToPrevMessage = {
+            id -> viewModel.navigateToPrev(id)
+        },
+        navigateToNextMessage = {
+            id -> viewModel.navigateToNext(id)
         }
     )
 
@@ -60,7 +67,9 @@ fun Conversationscreen(
 fun ConversationContent(
     state: ConversationScreenUIState,
     listState: LazyListState,
-    messageButtonOnClick: (String) -> Unit
+    messageButtonOnClick: (String) -> Unit,
+    navigateToPrevMessage: (Long) -> Unit,
+    navigateToNextMessage: (Long) -> Unit,
 ) {
     val scaffoldState = rememberScaffoldState()
     Scaffold(scaffoldState = scaffoldState)
@@ -79,15 +88,19 @@ fun ConversationContent(
                 state = listState
             ) {
                 items(state.messages) { item ->
-                    if (item.role == "user") {
+                    if (item.selectMessage.role == "user") {
                         UserMessageItem(
-                            content = item.content,
+                            content = item.selectMessage.content,
                             backgroundColor = MaterialTheme.colors.userBackground
                         )
                     } else {
                         AssitantMessageItem(
-                            content = item.content,
-                            backgroundColor = MaterialTheme.colors.assistantBackground
+                            content = item.selectMessage.content,
+                            backgroundColor = MaterialTheme.colors.assistantBackground,
+                            index = item.selectMessageIdx,
+                            total = item.totalMessage,
+                            navigateToPrevMessage = { navigateToPrevMessage(item.conversationId) },
+                            navigateToNextMessage = { navigateToNextMessage(item.conversationId) }
                         )
                     }
                     Divider(
@@ -121,19 +134,31 @@ private fun DefaultPreview() {
         ConversationContent(
             state = ConversationScreenUIState(
                 messages = listOf(
-                    Message(
-                        role = "user",
-                        content = "Hello World"
+                    ConversationWithSelectMessage(
+                        conversationId = 1,
+                        selectMessage = Message(
+                            role = "user",
+                            content = "Hello World"
+                        ),
+                        selectMessageIdx = 0,
+                        totalMessage = 1
                     ),
-                    Message(
-                        role = "assistant",
-                        content = "Hello! How can I assist you today?"
+                    ConversationWithSelectMessage(
+                        conversationId = 2,
+                        selectMessage = Message(
+                            role = "assistant",
+                            content = "Hello! How can I assist you today?"
+                        ),
+                        selectMessageIdx = 0,
+                        totalMessage = 10
                     )
                 ),
                 isLoading = true
             ),
             listState = rememberLazyListState(),
-            messageButtonOnClick = {}
+            messageButtonOnClick = {},
+            navigateToPrevMessage = { },
+            navigateToNextMessage = {}
         )
     }
 }

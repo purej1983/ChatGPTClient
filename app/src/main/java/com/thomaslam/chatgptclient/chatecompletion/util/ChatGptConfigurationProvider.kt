@@ -16,15 +16,14 @@ class ChatGptConfigurationProvider @Inject constructor(
     private val scope = CoroutineScope(Dispatchers.IO)
     lateinit var config: Config
     init {
-
-        scope.launch {
-            getConfig()
-        }
+        getConfig()
     }
 
-    private suspend fun getConfig() {
-        useCase.getConfig().collectLatest {
-            config = it
+    private fun getConfig() {
+        scope.launch {
+            useCase.getConfig().collectLatest {
+                config = it
+            }
         }
     }
     override val chatGptApiKey: String

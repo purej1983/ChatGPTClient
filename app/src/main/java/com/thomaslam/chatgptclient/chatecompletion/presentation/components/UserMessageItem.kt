@@ -70,7 +70,7 @@ fun UserMessageItem(
                     Icon(
                         imageVector = Icons.Default.Edit,
                         contentDescription = null,
-                        tint = Color.White,
+                        tint = MaterialTheme.colors.iconTintColor,
                         modifier = Modifier.size(24.dp)
                     )
                 }

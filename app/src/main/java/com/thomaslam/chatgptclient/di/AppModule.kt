@@ -99,7 +99,8 @@ class AppModule {
                 ChatGPTDatabase::class.java,
                 ChatGPTDatabase.DATABASE_NAME
             )
-            .addMigrations(ChatGPTDatabase.migration3To4)
+            .addCallback(ChatGPTDatabase.callback)
+            .addMigrations(ChatGPTDatabase.migration3To4, ChatGPTDatabase.migration5To6)
             .build()
     }
 

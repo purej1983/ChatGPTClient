@@ -3,7 +3,10 @@ package com.thomaslam.chatgptclient.chatecompletion.data.datasource.local
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ChatEntity
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ChatGptConfigEntity
 import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ConversationEntity
+import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.ConversationWithMessagesEntity
+import com.thomaslam.chatgptclient.chatecompletion.data.datasource.local.entity.MessageEntity
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.ChatState
+import com.thomaslam.chatgptclient.chatecompletion.domain.model.Message
 import com.thomaslam.chatgptclient.chatecompletion.util.MockDataCollections
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,12 +18,18 @@ class FakeChatGptDao: ChatGptDao {
     private var conversations = mockConversations
     private val conversationFlow = MutableStateFlow(conversations)
 
+    private var messages = mockMessages
+    private val messagesFlow = MutableStateFlow(messages)
+
+    private var conversationsWithMessages = mockEntityConversationWithMessages
+    private val conversationWithMessagesFlow = MutableStateFlow(conversationsWithMessages)
     private var chats = mockChats
     private val chatFlow = MutableStateFlow(chats)
 
 
     private var chatAutoId: Long = 2
     private var conversationAutoId: Long = 2
+    private var messageAutoId: Long = 2
 
     override suspend fun insertChat(chat: ChatEntity): Long {
         val newChat = chatFlow.value.toMutableList()
@@ -44,8 +53,6 @@ class FakeChatGptDao: ChatGptDao {
 
         val index = newConversation.indexOfFirst { it.id == id }
         val entity = ConversationEntity(
-            role = conversation.role,
-            content = conversation.content,
             chatId = conversation.chatId,
             id = id
         )
@@ -56,6 +63,28 @@ class FakeChatGptDao: ChatGptDao {
         }
         conversations = newConversation
         conversationFlow.value = conversations
+        return id
+    }
+
+    override suspend fun insertMessage(messageEntity: MessageEntity): Long {
+        val id = messageEntity.id ?: run {
+            ++messageAutoId
+        }
+
+        val newMessages = messagesFlow.value.toMutableList()
+        val index = newMessages.indexOfFirst { it.id == id }
+        val entity = messageEntity.copy(
+            id = id
+        )
+        if(index == -1) {
+            newMessages.add(entity)
+        } else {
+            newMessages[index] = entity
+        }
+        newMessages.add(entity)
+
+        messages = newMessages
+        messagesFlow.value = messages
         return id
     }
 
@@ -96,8 +125,8 @@ class FakeChatGptDao: ChatGptDao {
         return chatFlow
     }
 
-    override fun getConversationByChatId(chatId: Long): Flow<List<ConversationEntity>> {
-        return conversationFlow
+    override fun getConversationByChatId(chatId: Long): Flow<List<ConversationWithMessagesEntity>> {
+        return conversationWithMessagesFlow
     }
 
     companion object {
@@ -109,16 +138,35 @@ class FakeChatGptDao: ChatGptDao {
         val mockConversations = listOf(
             ConversationEntity(
                 id = 1,
-                role = MockDataCollections.userMessage1.role,
-                content = MockDataCollections.userMessage1.content,
                 chatId = 1
             ),
             ConversationEntity(
                 id = 2,
-                role = MockDataCollections.assistantMessage1.role,
-                content = MockDataCollections.assistantMessage1.content,
                 chatId = 1
             )
+        )
+
+        val mockMessages = listOf(
+            MessageEntity(
+                role = MockDataCollections.userMessage1.role,
+                content = MockDataCollections.userMessage1.content,
+                conversationId = 1
+            ),
+            MessageEntity(
+                role = MockDataCollections.assistantMessage1.role,
+                content = MockDataCollections.assistantMessage1.content,
+                conversationId = 2
+            )
+        )
+        val mockEntityConversationWithMessages = listOf(
+            ConversationWithMessagesEntity(
+                conversation = mockConversations.first { it.id == 1L },
+                messages = mockMessages.filter { it.conversationId == 1L }
+            ),
+            ConversationWithMessagesEntity(
+                conversation = mockConversations.first { it.id == 2L },
+                messages = mockMessages.filter { it.conversationId == 2L }
+            ),
         )
 
         val mockConfig = ChatGptConfigEntity(
@@ -128,5 +176,26 @@ class FakeChatGptDao: ChatGptDao {
             stream = true,
             max_tokens = 120
         )
+    }
+
+    override suspend fun insertConversationWithMessage(
+        chatId: Long,
+        conversationId: Long?,
+        messages: List<Message>
+    ): Long {
+        val id = super.insertConversationWithMessage(chatId, conversationId, messages)
+        conversationsWithMessages = conversations.map {
+            ConversationWithMessagesEntity(
+                conversation = it,
+                messages = this.messages.filter { message -> message.conversationId == it.id }
+            )
+        }
+        conversationWithMessagesFlow.value = conversationsWithMessages
+
+        return id
+    }
+
+    override suspend fun updateSelectedMessage(change: Int, conversationId: Long) {
+
     }
 }

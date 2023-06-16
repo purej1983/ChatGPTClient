@@ -2,6 +2,7 @@ package com.thomaslam.chatgptclient.chatecompletion.domain
 
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Chat
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.ChatState
+import com.thomaslam.chatgptclient.chatecompletion.domain.model.ConversationWithSelectMessage
 import com.thomaslam.chatgptclient.chatecompletion.domain.model.Message
 import com.thomaslam.chatgptclient.chatecompletion.domain.repository.ChatCompletionRepository
 import com.thomaslam.chatgptclient.chatecompletion.domain.util.Resource
@@ -42,7 +43,7 @@ class ChatCompletionUseCase (
             assistantMessage?.let {
                 saveMessage(chatId, assistantMessage)
                 updateChatState(chatId = chatId, state = ChatState.NEW_MESSAGE)
-                emit(Resource.Success(assistantMessage))
+                emit(Resource.Success(assistantMessage.first()))
             }
         } else if (chatCompletionResult is Resource.Error) {
             val errorMessage = chatCompletionResult.message ?: ""
@@ -55,43 +56,53 @@ class ChatCompletionUseCase (
     private suspend fun streamChatCompletion(chatId: Long, messages: List<Message>): Flow<Resource<Message>> = flow {
         emit(Resource.Loading())
         updateChatState(chatId = chatId, state = ChatState.LOADING)
-        var role = ""
-        var content = ""
+        val roleMap = mutableMapOf<Int, String>()
+        val contentMap = mutableMapOf<Int, String>()
+        val messsageMap = mutableMapOf<Int, Message>()
         var conversationId: Long? = null
         repository.streamChatCompletion(messages).collect{
-            println("chunk ${it.choices[0]}")
+            val idx = it.choices[0].index
             if(it.choices[0].message.role != null && it.choices[0].message.role.isNotEmpty()) {
-                role = it.choices[0].message.role
+                roleMap[idx] = it.choices[0].message.role
             } else if (it.choices[0].message.content != null && it.choices[0].message.content.isNotEmpty()) {
-                content += it.choices[0].message.content
+                val content = contentMap[idx] ?: ""
+                contentMap[idx] = content + it.choices[0].message.content
             }
-            if(role.isNotEmpty() && content.isNotEmpty()) {
-                val message = Message(
-                    role = role,
-                    content = content
-                )
-                if(it.choices[0].finalReason == "stop") {
-                    updateChatState(chatId = chatId, state = ChatState.NEW_MESSAGE)
+            roleMap[idx]?.let { role ->
+                contentMap[idx]?.let { content ->
+                    val message = Message(
+                        role = role,
+                        content = content
+                    )
+                    messsageMap[idx] = message
+                    if(it.choices[0].finalReason == "stop") {
+                        updateChatState(chatId = chatId, state = ChatState.NEW_MESSAGE)
+                    }
+                    val newAssitantMessages = messsageMap.toSortedMap().values.toList()
+                    conversationId = saveMessage(chatId, newAssitantMessages, conversationId)
+                    emit(Resource.Success(newAssitantMessages.first()))
                 }
-                conversationId = saveMessage(chatId, message, conversationId)
-                emit(Resource.Success(message))
             }
         }
     }
 
-    fun getConversation(id: Long): Flow<List<Message>> {
+    fun getConversation(id: Long): Flow<List<ConversationWithSelectMessage>> {
         return repository.getConversation(id)
     }
 
     suspend fun updateLastUserMessage(chatId: Long, content: String) {
         repository.updateLastUserMessage(chatId, content)
     }
-    suspend fun saveMessage(chatId: Long, message: Message, conversationId: Long? = null): Long {
-        return repository.saveLocalMessage(chatId, message, conversationId)
+    suspend fun saveMessage(chatId: Long, messages: List<Message>, conversationId: Long? = null): Long {
+        return repository.saveLocalMessage(chatId, messages, conversationId)
     }
 
     suspend fun resetChatState(chatId: Long) {
         repository.resetChatState(chatId = chatId)
+    }
+
+    suspend fun navigateToMessage(conversationId: Long, next: Boolean) {
+        repository.navigateToMessage(conversationId = conversationId, next = next)
     }
 
     private suspend fun updateChatState(chatId: Long, state: ChatState) {

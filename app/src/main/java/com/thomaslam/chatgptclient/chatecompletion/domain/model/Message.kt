@@ -2,5 +2,6 @@ package com.thomaslam.chatgptclient.chatecompletion.domain.model
 
 data class Message(
     val role: String = "user",
-    val content: String
+    val content: String,
+    val id: Long? = null
 )

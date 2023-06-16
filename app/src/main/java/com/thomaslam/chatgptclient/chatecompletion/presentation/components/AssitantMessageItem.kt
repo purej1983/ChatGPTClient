@@ -23,13 +23,17 @@ import androidx.compose.ui.unit.dp
 import com.thomaslam.chatgptclient.R
 import com.thomaslam.chatgptclient.ui.theme.ChatGPTClientTheme
 import com.thomaslam.chatgptclient.ui.theme.assistantBackground
+import com.thomaslam.chatgptclient.ui.theme.iconTintColor
 import com.thomaslam.chatgptclient.ui.theme.textColor
 
 @Composable
 fun AssitantMessageItem(
     content: String,
     backgroundColor: Color,
-
+    index: Int,
+    total: Int,
+    navigateToPrevMessage:() -> Unit,
+    navigateToNextMessage:() -> Unit,
     ) {
     Box(
         modifier = Modifier.background(backgroundColor)
@@ -59,6 +63,13 @@ fun AssitantMessageItem(
                 )
             }
             Row{
+                PageControl(
+                    index = index,
+                    total = total,
+                    onPreviousClick = { navigateToPrevMessage()},
+                    onNextClick = { navigateToNextMessage() })
+                    
+
                 Spacer(modifier = Modifier.weight(1f))
                 IconButton(
                     onClick = {
@@ -68,7 +79,7 @@ fun AssitantMessageItem(
                     Icon(
                         painter = painterResource(id = R.drawable.content_copy),
                         contentDescription = null,
-                        tint= Color.White,
+                        tint= MaterialTheme.colors.iconTintColor,
                         modifier = Modifier.size(24.dp)
                     )
                 }
@@ -81,7 +92,7 @@ fun AssitantMessageItem(
                     Icon(
                         painter = painterResource(id = R.drawable.thumb_up),
                         contentDescription = null,
-                        tint= Color.White,
+                        tint= MaterialTheme.colors.iconTintColor,
                         modifier = Modifier.size(24.dp)
                     )
                 }
@@ -94,7 +105,7 @@ fun AssitantMessageItem(
                     Icon(
                         painter = painterResource(id = R.drawable.thumb_down),
                         contentDescription = null,
-                        tint= Color.White,
+                        tint= MaterialTheme.colors.iconTintColor,
                         modifier = Modifier.size(24.dp)
                     )
                 }
@@ -111,7 +122,11 @@ private fun DefaultPreview() {
             content =
                 "Why do we use it?\n" +
                         "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for 'lorem ipsum' will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like).",
-            backgroundColor = MaterialTheme.colors.assistantBackground
+            backgroundColor = MaterialTheme.colors.assistantBackground,
+            index = 0,
+            total = 1,
+            navigateToPrevMessage = {},
+            navigateToNextMessage = {}
         )
     }
 }
